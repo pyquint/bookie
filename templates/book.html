@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Book Search
+{% endblock %}
+
+{% block content %}
+
+</style>
+<div class="container-lg">
+
+    <a href="{{ url_for('index') }}">Back to Home</a>
+
+    <div class="book-content mt-4">
+
+        <h1>{{ book.title }}</h1>
+        <p><strong>Author:</strong> {{ book.author }}</p>
+        <p><strong>Date of Publication:</strong> {{ book.publish_date }}</p>
+        <p><strong>Publisher:</strong> {{ book.publisher }}</p>
+
+        <p class="text-justify"><strong>Description:</strong> {{ book.description }}</p>
+
+        <div><img src="{{ book.cover_img }}" alt="[no cover image avaiable]" /></div>
+    </div>
+</div>
+
+
+{% endblock %}

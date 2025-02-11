@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Signup
+{% endblock %}
+
+{% block content %}
+<div class="container-md content-sectionC">
+    <form action="" method="POST">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Sign up</legend>
+            <div class="form-group">
+                {{ form.username.label(class="form-control-label") }}
+                {{ form.username(class="form-control form-control-lg") }}
+            </div>
+            <div class="form-group">
+                {{ form.email.label(class="form-control-label") }}
+                {{ form.email(class="form-control form-control-lg") }}
+            </div>
+            <div class="form-group">
+                {{ form.password.label(class="form-control-label") }}
+                {{ form.password(class="form-control form-control-lg") }}
+            </div>
+            <div class="form-group">
+                {{ form.confirm_password.label(class="form-control-label") }}
+                {{ form.confirm_password(class="form-control form-control-lg") }}
+            </div>
+        </fieldset>
+        <div class="form-group mt-2">
+            {{ form.submit(class="btn btn-warning") }}
+        </div>
+    </form>
+
+    <div class="pt-4">
+        <p class="text-muted">Already have an account? <a href=" {{ url_for('login') }}" class="">Log in</a></p>
+    </div>
+</div>
+
+
+{% endblock content%}

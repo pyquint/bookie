@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Search Results
+{% endblock %}
+
+{% block content %}
+<style>
+    /*
+    supposedly removes the spinner button from page input, doesn't work
+
+    /* input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+        border-radius: 0;
+        color: aquamarine;
+    }
+
+    input[type=number] {
+        -moz-appearance: textfield;
+    } */
+
+    .entry-thumb {
+        display: block;
+        object-fit: cover;
+        width: 32vh;
+        height: 100%;
+    }
+</style>
+
+<div class="container-lg">
+    <h1>Search results:</h1>
+
+    {% if results %}
+    <div class="container d-flex flex-wrap">
+        {% for book in results %}
+        <div class="card rounded-4 w-50">
+            <div class="row g-0 d-flex">
+                <div class="col-lg-4 entry-thumb">
+                    <img src="{{ book.cover_img }}" class="rounded-4 entry-thumb" alt="book cover" />
+                </div>
+                <div class="col">
+                    <div class="card-body">
+                        <div>
+                            <h2 class="card-title"><a href="{{ url_for('book', book_id=book.book_id) }}">{{ book.title
+                                    }}</a>
+                            </h2>
+                            <p class="card-text">Author: {{ book.author }}</p>
+                            <p class="card-text">Published: {{ book.publish_date }}</p>
+                            <p class="card-text">ISBN: {{ book.isbn }}</p>
+                            <p class="card-text">Publisher: {{ book.publisher }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-2 d-flex justify-content-center">
+        <nav aria-label="pagination">
+            <ul class="pagination">
+                <!-- prev button -->
+                <li class="page-item">
+                    <a href="{{ prev_page_url }}" class="page-link
+                        {{ 'disabled' if not prev_page_url }}" aria-labe="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+
+                <!-- page number input -->
+                <li class="page-item disabled"><a class="page-link">Page</a>
+                </li>
+                <form action="/search" method="get">
+                    <input type="hidden" name="type" value="{{ args.type }}">
+                    <input type="hidden" name="query" value="{{ args.query }}">
+                    <input type="number" class="form-control rounded-0" name="page" value="{{ results.page }}" min="1"
+                        max="{{ results.pages }}" required style="width: 75px; text-align: center;">
+                </form>
+
+                <!-- next page -->
+                <li class="page-item"><a class="page-link disabled">of {{
+                        results.pages
+                        }}</a></li>
+                <li class="page-item">
+                    <a href="{{ next_page_url }}" class="page-link {{ 'disabled' if not next_page_url }}"
+                        aria-label="Next"><span aria-hidden="true">&raquo;</span></a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    {% else %}
+    <p>No results found for your search.</p>
+    {% endif %}
+</div>
+</div>
+{% endblock content %}
