@@ -1,5 +1,5 @@
 # Book Catalogue App
-This is a web app that allows users to search for books from a dataset containing 52,478 of the best-ranked books of all time.
+This is a web app that allows users to search for books from a [dataset](https://www.kaggle.com/datasets/pooriamst/best-books-ever-dataset) containing 52,478 of the best-ranked books of all time.
 
 Developed in Python and Flask, using SQLite as the database.
 
@@ -37,7 +37,7 @@ Follow the steps below to set up your local development environment:
 ```
 
 4. Initialize the database. Navigate to the `data` folder and run the setup script.
-5. 
+5.
 ```
 > cd path\to\bookie\data
 > setup.bat
