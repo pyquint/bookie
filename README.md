@@ -14,14 +14,13 @@ Developed in Python and Flask, using SQLite as the database.
 - [ ] Improve web design. Least priority.
 
 # Development Setup
-Controbutions to the project are welcome! The steps below are for Windows only, but with a few tweaks, they can apply to Unix/macOS.
+Controbutions to the project are welcome! The steps below are for Windows only, but with a few tweaks they can also apply to Unix/macOS.
 
 Follow the steps below to set up your local development environment:
 
 1. Create a prject directory and set up a virtual environment.
 
 ```
-> cd path\to\bookie
 > python -m venv .venv
 ```
 
@@ -36,11 +35,9 @@ Follow the steps below to set up your local development environment:
 > python -m pip install -r requirements.txt
 ```
 
-4. Initialize the database. Navigate to the `data` folder and run the setup script.
-5.
+4. Navigate to the `data` folder and run the setup script to create database.
+
 ```
 > cd path\to\bookie\data
 > setup.bat
 ```
-
-Any help is greatly appreciated!
