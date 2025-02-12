@@ -37,7 +37,7 @@ def load_user(user_id):
 
 
 class Book(db.Model):
-    __tablename__ = "book_fts"
+    __tablename__ = "books_fts"
 
     book_id = db.Column(db.String, primary_key=True)
     isbn = db.Column(db.String)
@@ -122,16 +122,17 @@ def search():
     query = Book.query
 
     for column in Book.__table__.columns:
-        arg_value = request.args.get(column.name)
-
-        if arg_value:
+        if arg_value := request.args.get(column.name):
             query = query.filter(getattr(Book, column.name).like(f"%{arg_value}%"))
 
-    results = query.all()
-
+    sort = request.args.get("sort", "title")
     page = request.args.get("page", 1, type=int)
+
+    sorted_query = query.order_by(getattr(Book, sort))
+    results = sorted_query.all()
+
     per_page = 10
-    results = query.paginate(page=page, per_page=per_page, error_out=False)
+    results = sorted_query.paginate(page=page, per_page=per_page, error_out=False)
 
     params = request.args.to_dict()
     params.popitem()
@@ -147,6 +148,7 @@ def search():
     return render_template(
         "search_results.html",
         args=request.args,
+        sort=sort,
         results=results,
         prev_page_url=prev_page_url,
         next_page_url=next_page_url,

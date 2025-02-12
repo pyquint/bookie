@@ -31,14 +31,32 @@ Search Results
 
 <div class="container-lg">
     <h1>Search results:</h1>
+    <h2>Sort by: {{ args.sort }}</h2>
+
 
     {% if results %}
+
+    <!-- TODO: find a way to modify sort while keeping other parameters -->
+    <!-- Also, the dropdown has no text, no idea why. -->
+    <div class="container input-group mb-4 mx-auto">
+        <form role="sort" action="/search" method="get" id="sort-results">
+            <label for="sort">Sort by:</label>
+            <select name="sort" class="form-select dropdown-toggle col- w-25" id="sort" onchange="this.form.submit()">
+                <option value="" {% if args.sort=='relevance' %}selected{% endif %}>Relevance</option>
+                <option value="title" {% if args.sort=='title' %}selected{% endif %}>Title</option>
+                <option value="pages" {% if args.sort=='pages' %}selected{% endif %}>Pages</option>
+                <option value="ratings" {% if args.sort=='ratings' %}selected{% endif %}>Ratings</option>
+            </select>
+        </form>
+    </div>
+
     <div class="container d-flex flex-wrap">
         {% for book in results %}
         <div class="card rounded-4 w-50">
             <div class="row g-0 d-flex">
                 <div class="col-lg-4 entry-thumb">
-                    <img src="{{ book.cover_img }}" class="rounded-4 entry-thumb" alt="book cover" />
+                    <a href="{{ url_for('book', book_id=book.book_id) }}"><img src="{{ book.cover_img }}"
+                            class="rounded-4 entry-thumb" alt="book cover" /></a>
                 </div>
                 <div class="col">
                     <div class="card-body">
@@ -50,6 +68,8 @@ Search Results
                             <p class="card-text">Published: {{ book.publish_date }}</p>
                             <p class="card-text">ISBN: {{ book.isbn }}</p>
                             <p class="card-text">Publisher: {{ book.publisher }}</p>
+                            <p class="card-text">Pages: {{ book.pages }}</p>
+                            <p class="card-text">Ratings: {{ book.num_ratings }}</p>
                         </div>
                     </div>
                 </div>
@@ -58,8 +78,8 @@ Search Results
         {% endfor %}
     </div>
 
-    <div class="mt-2 d-flex justify-content-center">
-        <nav aria-label="pagination">
+    <nav class="fixed-bottom" aria-label="pagination">
+        <div class="mt-2 d-flex justify-content-center">
             <ul class="pagination">
                 <!-- prev button -->
                 <li class="page-item">
@@ -88,8 +108,8 @@ Search Results
                         aria-label="Next"><span aria-hidden="true">&raquo;</span></a>
                 </li>
             </ul>
-        </nav>
-    </div>
+        </div>
+    </nav>
     {% else %}
     <p>No results found for your search.</p>
     {% endif %}
