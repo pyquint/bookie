@@ -1,36 +1,42 @@
 {% extends "layout.html" %}
 
 {% block title %}
-Advanced Search
-{% endblock %}
+    Advanced Search
+{% endblock title %}
 
 {% block content %}
-<style>
-    #advanced-search .form-control {
-        margin-bottom: 12px;
-    }
-</style>
+    <style>
+        #advanced-search .form-control {
+            margin-bottom: 12px;
+        }
+    </style>
 
-<div class="container-md d-flex">
-    <form role="search" action="/search" method="get" id="advanced-search">
-        <label for="title">Title</label>
-        <input type="text" class="form-control" name="title">
+    <div class="container-md d-flex">
+        <form role="search" action="/search" method="get" id="advanced-search">
+            <label for="title">
+                Title
+                <input type="text" class="form-control" name="title" />
+            </label>
 
-        <label for="author">Author</label>
-        <input type="text" class="form-control" name="author">
+            <label for="author">
+                Author
+                <input type="text" class="form-control" name="author" />
+            </label>
 
-        <label for="isbn">ISBN</label>
-        <input type="text" class="form-control" name="isbn">
+            <label for="isbn">
+                ISBN
+                <input type="text" class="form-control" name="isbn" />
+            </label>
 
-        <label for="ublisher">Publisher</label>
-        <input type="text" class="form-control" name="publisher">
+            <label for="publisher">
+                Publisher
+                <input type="text" class="form-control" name="publisher" />
+            </label>
 
-        <button class="btn btn-warning rounded-end" type="submit">Search</button>
-        <input type="hidden" name="page" value="1">
+            <button class="btn btn-warning rounded-end" type="submit">Search</button>
+            <input type="hidden" name="page" value="1" />
 
-        <input type="hidden" name="page" type="number" value="1">
-    </form>
-</div>
-</div>
-</div>
+            <input type="hidden" name="page" value="1" />
+        </form>
+    </div>
 {% endblock content %}
