@@ -88,37 +88,6 @@ def login():
 
 @app.route("/search", methods=["GET"])
 def search():
-    """
-    This query returns duplicate results, even if the search type is ISBN
-    which is supposedly unique. Do note that some of the entries do have
-    the same ISBN consisting of all 9s.
-
-    The idea was to get the exact matches first then similar matches.
-
-        dbquery = '''
-            SELECT *, 1 AS exact_match_priority
-            FROM book_fts
-            WHERE {col} MATCH :text
-
-            UNION
-
-            SELECT *, 0 AS exact_match_priority
-            FROM book_fts
-            WHERE {col} LIKE :like_text
-            ORDER BY exact_match_priority DESC, {col};
-        '''
-
-        results = db.session.execute(
-            text(dbquery), {"text": f'"{query}"', "like_text": f"%{query}%"}
-        ).fetchall()
-
-        per_page = 10
-        paginated_results = results[(page - 1) * per_page : page * per_page]
-
-        total_results = len(results)
-        total_pages = (total_results + per_page - 1) // per_page
-    """
-
     query = Book.query
 
     for column in Book.__table__.columns:
@@ -127,6 +96,7 @@ def search():
 
     sort = request.args.get("sort", "title")
     page = request.args.get("page", 1, type=int)
+    print("request:", request)
 
     sorted_query = query.order_by(getattr(Book, sort))
     results = sorted_query.all()
@@ -135,7 +105,7 @@ def search():
     results = sorted_query.paginate(page=page, per_page=per_page, error_out=False)
 
     params = request.args.to_dict()
-    params.popitem()
+    params.pop("page")
 
     prev_page_url = (
         url_for("search", **params, page=results.page - 1) if results.has_prev else None

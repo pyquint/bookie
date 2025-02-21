@@ -18,26 +18,29 @@ Controbutions to the project are welcome! The steps below are for Windows only, 
 
 Follow the steps below to set up your local development environment:
 
-1. Create a prject directory and set up a virtual environment.
+1. Create a project directory and set up a virtual environment.
 
 ```
-> python -m venv .venv
+python -m venv .venv
 ```
 
 2. Activate the virtual environment.
 ```
-> .venv\Scripts\activate
+.venv\Scripts\activate
 ```
 
 3. Install required dependencies listed in `requirements.txt`.
 
 ```
-> python -m pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 4. Navigate to the `data` folder and run the setup script to create database.
 
 ```
-> cd path\to\bookie\data
-> setup.bat
+cd path\to\bookie\data
+```
+
+```
+setup.bat
 ```
