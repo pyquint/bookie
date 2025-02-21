@@ -1,4 +1,4 @@
-CREATE TABLE books (
+CREATE TABLE IF NOT EXISTS books (
     book_id TEXT PRIMARY KEY,
     title TEXT,
     series TEXT,
@@ -24,4 +24,12 @@ CREATE TABLE books (
     bbe_score REAL,
     bbe_votes INTEGER,
     price REAL
+);
+
+CREATE TABLE IF NOT EXISTS users (
+    uid INTEGER PRIMARY KEY,
+    username TEXT,
+    email TEXT,
+    date_created TEXT,
+    password_hash TEXT
 );

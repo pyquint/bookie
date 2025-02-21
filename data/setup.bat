@@ -4,6 +4,11 @@ set db_dir="..\instance"
 set db_file="%db_dir%\bookie.db"
 set dataset="best_books_dataset.csv"
 
+echo Deleting existing bookie.db file...
+if exist %db_file% (
+    del %db_file%
+)
+
 echo Checking if setup.sql exists...
 if not exist setup.sql (
     echo 'setup.sql' file does not exist. Exiting...
