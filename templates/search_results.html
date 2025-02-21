@@ -18,6 +18,7 @@
             text-align: center;
         }
     </style>
+
     <div class="container-lg">
         <h1>Search results:</h1>
         {% if results %}
@@ -34,7 +35,7 @@
                         <!-- <option value="" {{ selected if args.sort=='relevance' }}>Relevance</option> -->
                         <option value="title" {% if args.sort=='title' %}selected{% endif %}>Title</option>
                         <option value="pages" {% if args.sort=='pages' %}selected{% endif %}>Pages</option>
-                        <option value="rating" {% if args.sort=='rating' %}selected{% endif %}>Rating</option>
+                        <option value="ratings" {% if args.sort=='ratings' %}selected{% endif %}>Ratings</option>
                     </select>
                 </form>
             </div>
@@ -59,7 +60,7 @@
                                         <p class="card-text">ISBN: {{ book.isbn }}</p>
                                         <p class="card-text">Publisher: {{ book.publisher }}</p>
                                         <p class="card-text">Pages: {{ book.pages }}</p>
-                                        <p class="card-text">Ratings: {{ book.num_ratings }}</p>
+                                        <p class="card-text">Ratings: {{ "{:,.2f}".format(book.num_ratings) }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -83,6 +84,12 @@
                             <a class="page-link">Page</a>
                         </li>
                         <form action="{{ url_for('search') }}" method="get">
+                            <input type="hidden" name="title" value="{{ args.title }}" />
+                            <input type="hidden" name="author" value="{{ args.author }}" />
+                            <input type="hidden" name="isbn" value="{{ args.isbn }}" />
+                            <input type="hidden" name="publisher" value="{{ args.publisher }}" />
+                            <input type="hidden" name="sort" value="{{ args.sort }}" />
+
                             <input type="number"
                                    class="form-control rounded-0"
                                    name="page"

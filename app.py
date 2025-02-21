@@ -1,142 +1,28 @@
 import sass
-from flask import Flask, redirect, render_template, request, url_for
-from flask_login import (
-    LoginManager,
-    UserMixin,
-    current_user,
-    login_required,
-    login_user,
-    logout_user,
-)
+from argon2 import PasswordHasher
+from flask import Flask
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text
 
-from forms import LoginForm, SignupForm
-
-app = Flask(__name__)
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-sass.compile(dirname=("static/sass", "static/css"))
-
-app.config["SECRET_KEY"] = "eab1049363d660aa39c1fb8bf5197ba2"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bookie.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-db = SQLAlchemy(app)
+db = SQLAlchemy()
+ph = PasswordHasher()
 
 
-class User(UserMixin):
-    def __init__(self, id):
-        self.id = id
+def create_app():
+    app = Flask(__name__, template_folder="templates")
 
+    sass.compile(dirname=("static/sass", "static/css"))
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User(user_id)
+    app.config["SECRET_KEY"] = "eab1049363d660aa39c1fb8bf5197ba2"
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bookie.db"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+    db.init_app(app)
 
-class Book(db.Model):
-    __tablename__ = "books_fts"
+    # imports
+    from routes import register_routes
 
-    book_id = db.Column(db.String, primary_key=True)
-    isbn = db.Column(db.String)
-    title = db.Column(db.String)
-    series = db.Column(db.String, nullable=True)
-    author = db.Column(db.String, nullable=True)
-    rating = db.Column(db.String, nullable=True)
-    description = db.Column(db.String, nullable=True)
-    language = db.Column(db.String, nullable=True)
-    genres = db.Column(db.String, nullable=True)
-    characters = db.Column(db.String, nullable=True)
-    book_format = db.Column(db.String, nullable=True)
-    edition = db.Column(db.String, nullable=True)
-    pages = db.Column(db.String, nullable=True)
-    publisher = db.Column(db.String, nullable=True)
-    publish_date = db.Column(db.String, nullable=True)
-    awards = db.Column(db.String, nullable=True)
-    num_ratings = db.Column(db.String, nullable=True)
-    ratings_by_stars = db.Column(db.String, nullable=True)
-    liked_percent = db.Column(db.String, nullable=True)
-    setting = db.Column(db.String, nullable=True)
-    cover_img = db.Column(db.String, nullable=True)
-    bbe_score = db.Column(db.String, nullable=True)
-    bbe_votes = db.Column(db.String, nullable=True)
-    price = db.Column(db.String, nullable=True)
+    register_routes(app, db)
+    migrate = Migrate(app, db)
 
-    def __repr__(self):
-        return f"<Book {self.title} by {self.author}>"
-
-
-@app.route("/", methods=["POST", "GET"])
-def index():
-    books = Book.query.limit(10).all()
-    return render_template("index.html", books=books)
-
-
-@app.route("/signup")
-def signup():
-    form = SignupForm()
-    return render_template("signup.html", form=form)
-
-
-@app.route("/login")
-def login():
-    form = SignupForm()
-    return render_template("login.html", form=form)
-
-
-@app.route("/search", methods=["GET"])
-def search():
-    query = Book.query
-
-    for column in Book.__table__.columns:
-        if arg_value := request.args.get(column.name):
-            query = query.filter(getattr(Book, column.name).like(f"%{arg_value}%"))
-
-    sort = request.args.get("sort", "title")
-    page = request.args.get("page", 1, type=int)
-    print("request:", request)
-
-    sorted_query = query.order_by(getattr(Book, sort))
-    results = sorted_query.all()
-
-    per_page = 10
-    results = sorted_query.paginate(page=page, per_page=per_page, error_out=False)
-
-    params = request.args.to_dict()
-    params.pop("page")
-
-    prev_page_url = (
-        url_for("search", **params, page=results.page - 1) if results.has_prev else None
-    )
-
-    next_page_url = (
-        url_for("search", **params, page=results.page + 1) if results.has_next else None
-    )
-
-    return render_template(
-        "search_results.html",
-        args=request.args,
-        sort=sort,
-        results=results,
-        prev_page_url=prev_page_url,
-        next_page_url=next_page_url,
-    )
-
-
-@app.route("/advanced_search")
-def advanced_search():
-    return render_template("advanced_search.html")
-
-
-@app.route("/book/<book_id>")
-def book(book_id):
-    book = Book.query.get(book_id)
-    if book is None:
-        return redirect("/")
-    return render_template("book.html", book=book)
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    return app

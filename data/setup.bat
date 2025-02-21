@@ -32,22 +32,18 @@ if not exist %db_dir% (
 echo Running setup.sql...
 sqlite3 %db_file% < "setup.sql"
 
-
-echo Checking if fts.sql exists...
-if not exist fts.sql (
-    echo 'fts.sql' file does not exist. Exiting...
-    pause
-    exit /b 1
-)
-
-
 echo Importing database...
 sqlite3 %db_file% ".mode csv" ".import %dataset% books"
 
+@REM echo Checking if fts.sql exists...
+@REM if not exist fts.sql (
+@REM     echo 'fts.sql' file does not exist. Exiting...
+@REM     pause
+@REM     exit /b 1
+@REM )
 
-echo Initializing FTS5...
-sqlite3 %db_file% < "fts.sql"
-
+@REM echo Initializing FTS5...
+@REM sqlite3 %db_file% < "fts.sql"
 
 echo Database setup completed successfully.
 pause
