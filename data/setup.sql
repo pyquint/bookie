@@ -32,5 +32,4 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT,
     date_created TEXT,
     password_hash TEXT,
-    PRIMARY KEY
 );
