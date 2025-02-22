@@ -63,7 +63,7 @@ def register_routes(app, db, ph):
                 login_user(user)
                 flash("Logged in successfully.")
                 session["username"] = username
-                return redirect(url_for("user"))
+                return redirect(url_for("index"))
             else:
                 return "Login unsuccessful"
 
