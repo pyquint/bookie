@@ -1,3 +1,4 @@
+from argon2.exceptions import VerifyMismatchError
 from flask_login import UserMixin
 
 from app import db, ph
@@ -6,7 +7,7 @@ from app import db, ph
 class Book(db.Model):
     __tablename__ = "books"
 
-    book_id = db.Column(db.String, primary_key=True)
+    book_id = db.Column(db.Text, primary_key=True)
     isbn = db.Column(db.Text, nullable=False)
     title = db.Column(db.Text, nullable=False)
     series = db.Column(db.Text, nullable=True)
@@ -39,16 +40,23 @@ class User(db.Model, UserMixin):
     __tablename__ = "users"
 
     uid = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(128), nullable=False, unique=True)
-    email = db.Column(db.String(128), nullable=False, unique=True)
-    date_created = db.Column(db.String(128), nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
+    username = db.Column(db.Text, nullable=False, unique=True)
+    email = db.Column(db.Text, nullable=False)
+    date_created = db.Column(db.Text, nullable=False)
+    password_hash = db.Column(db.Text, nullable=False)
+
+    def get_id(self):
+        return self.uid
 
     def set_password(self, password):
         self.password_hash = ph.hash(password)
 
     def check_password(self, password):
-        return ph.verify(self.password_hash, password)
+        try:
+            ph.verify(self.password_hash, password)
+            return True
+        except VerifyMismatchError:
+            return False
 
     def __repr__(self):
-        return f"<User '{self.username}', Date Created {self.date_created}>"
+        return f"<User {self.username}; Password Hash: {self.password_hash}; Date Created {self.date_created}>"

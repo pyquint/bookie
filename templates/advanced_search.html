@@ -12,7 +12,7 @@
     </style>
 
     <div class="container-md d-flex">
-        <form role="search" action="/search" method="get" id="advanced-search">
+        <form role="search" action="{{ url_for('search') }}" method="get" id="advanced-search">
             <label for="title">
                 Title
                 <input type="text" class="form-control" name="title" />

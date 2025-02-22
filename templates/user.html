@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}
+    User
+{% endblock title %}
+{% block content %}
+    <div class="container-md">
+        <h1>Hello, {{ user.username }}</h1>
+        <a href="{{ url_for('logout') }}" class="btn btn-warning" role="button">Log Out</a>
+    </div>
+{% endblock content %}

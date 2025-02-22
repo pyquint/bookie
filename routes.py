@@ -1,4 +1,6 @@
-from flask import redirect, render_template, request, session, url_for
+from datetime import datetime
+
+from flask import flash, redirect, render_template, request, session, url_for
 from flask_login import (
     LoginManager,
     UserMixin,
@@ -11,16 +13,8 @@ from flask_login import (
 from forms import LoginForm, SignupForm
 from models import Book, User
 
-login_manager = LoginManager()
 
-
-def register_routes(app, db):
-    login_manager.init_app(app)
-
-    @login_manager.user_loader
-    def load_user(uid):
-        return User.query.get(uid)
-
+def register_routes(app, db, ph):
     @app.route("/", methods=["GET", "POST"])
     def index():
         return render_template("index.html")
@@ -28,29 +22,50 @@ def register_routes(app, db):
     @app.route("/signup", methods=["GET", "POST"])
     def signup():
         form = SignupForm()
-        return render_template("signup.html", form=form)
+        if form.validate_on_submit():
+            username = request.form.get("username")
+            email = request.form.get("email")
+            password_hash = ph.hash(request.form.get("password"))
+            date_created = datetime.now()
+
+            flash(
+                f"[{date_created.strftime("%b %d, %Y : %I:%M:%S %p")}]: Account created '{username}'",
+                "success",
+            )
+
+            user = User(
+                username=username,
+                email=email,
+                password_hash=password_hash,
+                date_created=date_created.isoformat(),
+            )
+
+            db.session.add(user)
+            db.session.commit()
+
+            return redirect(url_for("index"))
+
+        return render_template("auth/signup.html", form=form)
 
     @app.route("/login", methods=["GET", "POST"])
-    def login(uid):
-        form = LoginForm()
+    def login():
+        if request.method == "GET":
+            form = LoginForm()
+            return render_template("auth/login.html", form=form)
+        elif request.method == "POST":
+            username = request.form.get("username")
+            password = request.form.get("password")
 
-        username = request.form["username"]
-        password = request.form["password"]
-        user = User.query.get(uid)
+            user = User.query.filter(User.username == username).first()
+            print(user)
 
-        if user and user.check_password(password):
-            session["username"] = username
-            return redirect(url_for("index"))
-        else:
-            pass
-
-        return render_template("login.html", form=form)
-
-    # @app.route("/login/<uid>")
-    # def login(uid):
-    #     user = User.query.get(uid)
-    #     login_user(uid)
-    #     return "Successfully logged in"
+            if user and user.check_password(password):
+                login_user(user)
+                flash("Logged in successfully.")
+                session["username"] = username
+                return redirect(url_for("user"))
+            else:
+                return "Login unsuccessful"
 
     @app.route("/logout")
     def logout():
@@ -113,3 +128,8 @@ def register_routes(app, db):
         if book is None:
             return redirect("/")
         return render_template("book.html", book=book)
+
+    @app.route("/user/<username>")
+    def user(username):
+        user = User.query.filter(User.username == username).first()
+        return render_template("user.html", user=user)

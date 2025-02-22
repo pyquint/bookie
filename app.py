@@ -1,6 +1,7 @@
 import sass
 from argon2 import PasswordHasher
 from flask import Flask
+from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
@@ -19,10 +20,24 @@ def create_app():
 
     db.init_app(app)
 
-    # imports
+    from models import User
     from routes import register_routes
 
-    register_routes(app, db)
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(uid):
+        return User.query.get(uid)
+
+    register_routes(app, db, ph)
+
     migrate = Migrate(app, db)
+
+    with app.app_context():
+        if db.engine.url.drivername == "sqlite":
+            migrate.init_app(app, db, render_as_batch=True)
+        else:
+            migrate.init_app(app, db)
 
     return app
