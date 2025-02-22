@@ -31,5 +31,5 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT,
     email TEXT,
     date_created TEXT,
-    password_hash TEXT,
+    password_hash TEXT
 );
