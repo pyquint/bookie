@@ -6,7 +6,7 @@ from wtforms import (
     SubmitField,
     ValidationError,
 )
-from wtforms.validators import DataRequired, Email, EqualTo, Length
+from wtforms.validators import DataRequired, Email, EqualTo, Length, Regexp
 
 from models import User
 
@@ -30,7 +30,15 @@ class Unique(object):
 class SignupForm(FlaskForm):
     username = StringField(
         "Username",
-        validators=[DataRequired(), Length(min=1, max=16), Unique(User, User.username)],
+        validators=[
+            DataRequired(),
+            Length(min=1, max=64),
+            Regexp(
+                "^[A-Za-z][A-Za-z0-9_.]*$",
+                0,
+                "Usernames must have only letters, numbers, dots or underscores",
+            ),
+        ],
     )
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField("Password", validators=[DataRequired(), Length(min=8)])
@@ -38,6 +46,10 @@ class SignupForm(FlaskForm):
         "Confirm Password", validators=[DataRequired(), EqualTo("password")]
     )
     submit = SubmitField("Sign Up")
+
+    def validate_username(self, field):
+        if User.query.filter_by(username=field.data).first():
+            raise ValidationError("Username already exists.")
 
 
 class LoginForm(FlaskForm):

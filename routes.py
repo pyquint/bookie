@@ -22,6 +22,7 @@ def register_routes(app, db, ph):
     @app.route("/signup", methods=["GET", "POST"])
     def signup():
         form = SignupForm()
+
         if form.validate_on_submit():
             username = request.form.get("username")
             email = request.form.get("email")
@@ -43,6 +44,9 @@ def register_routes(app, db, ph):
             db.session.add(user)
             db.session.commit()
 
+            login_user(user)
+            session["username"] = username
+
             return redirect(url_for("index"))
 
         return render_template("auth/signup.html", form=form)
@@ -56,8 +60,7 @@ def register_routes(app, db, ph):
             username = request.form.get("username")
             password = request.form.get("password")
 
-            user = User.query.filter(User.username == username).first()
-            print(user)
+            user = User.query.filter_by(username=User.username).first()
 
             if user and user.check_password(password):
                 login_user(user)
@@ -65,12 +68,14 @@ def register_routes(app, db, ph):
                 session["username"] = username
                 return redirect(url_for("index"))
             else:
-                return "Login unsuccessful"
+                flash("Login unsuccessful.")
+                return redirect(url_for("index"))
 
     @app.route("/logout")
     def logout():
         logout_user()
-        return "Successfully logged out"
+        flash("Logged out successfully.")
+        return redirect(url_for("index"))
 
     @app.route("/search", methods=["GET"])
     def search():

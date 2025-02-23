@@ -67,7 +67,7 @@ class User(db.Model, UserMixin):
         return f"<User {self.username}; Password Hash: {self.password_hash}; Date Created {self.date_created}>"
 ```
 
-As stated in [Users](Users),  `date_created` is a String formatted in ISO 8901.
+As stated in [Users](Users.md),  `date_created` is a String formatted in ISO 8901.
 
 Checking password hashes is done with`ph`, which is a `PasswordHasher` object from the `argon2` package, declared and imported from `app.py`.
 

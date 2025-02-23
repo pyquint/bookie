@@ -4,6 +4,7 @@ from flask import Flask
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from sassutils.wsgi import SassMiddleware
 
 db = SQLAlchemy()
 ph = PasswordHasher()
@@ -12,7 +13,9 @@ ph = PasswordHasher()
 def create_app():
     app = Flask(__name__, template_folder="templates")
 
-    sass.compile(dirname=("static/sass", "static/css"))
+    app.wsgi_app = SassMiddleware(
+        app.wsgi_app, {"app": ("static/sass", "static/css", "/static/css")}
+    )
 
     app.config["SECRET_KEY"] = "eab1049363d660aa39c1fb8bf5197ba2"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bookie.db"
