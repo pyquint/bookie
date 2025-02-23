@@ -1,6 +1,8 @@
 body {
-  background: Ivory;
-  background-color: Ivory;
+  background-image: url(Beige Light Brown );
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   font-size: 80%; }
 
 .book-thumb {
