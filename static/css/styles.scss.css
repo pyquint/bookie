@@ -1,0 +1,15 @@
+body {
+  background-image: url("/static/img/background.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-size: 80%; }
+
+.book-thumb {
+  max-width: 100px;
+  max-height: 150px; }
+
+.text-justify {
+  text-align: justify; }
+
+/*# sourceMappingURL=styles.scss.css.map */
