@@ -18,7 +18,7 @@
                 integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
                 crossorigin="anonymous"></script>
 
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.scss.css') }}" type="text/css" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
         <script src="{{ url_for('static', filename='/js/scripts.js') }}"></script>
     </head>
 
@@ -27,7 +27,7 @@
             <nav class="navbar navbar-expand-md navbar-light">
                 <div class="container-lg d-flex flex-wrap justify-content-center justify-content-lg-start align-items-center">
 
-                    <a class="navbar-brand" href="{{ url_for('index') }}" id="logo">[logo]</a>
+                    <a class="navbar-brand" href="{{ url_for('index') }}" id="logo"> <img src="/static/img/BOOKI.png" alt="Logo" width="60" height="60"></a>
 
                     <ul class="nav col-12 col-lg-auto me-lg-auto justify-content-center mb-lg-0 align-items-center">
                         <a href="#" class="nav-link px-2">Book Catalogue</a>
@@ -72,10 +72,10 @@
                     <div class="text-end">
                         <!-- login and singup or profile picture -->
                         {% if not current_user.is_authenticated %}
-                            <button class="btn btn-success">
+                            <button style="background-color: #f9e075; color: black;">
                                 <a href="{{ url_for('login') }}" class="nav-link">Login</a>
                             </button>
-                            <button class="btn btn-warning">
+                            <button style="background-color: #0492c2; color: black;">
                                 <a href="{{ url_for('signup') }}" class="nav-link">Sign
                                 up</a>
                             </button>
