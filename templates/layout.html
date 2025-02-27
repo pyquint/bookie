@@ -72,10 +72,10 @@
                     <div class="text-end">
                         <!-- login and singup or profile picture -->
                         {% if not current_user.is_authenticated %}
-                            <button style="background-color: #f9e075; color: black;">
+                            <button class="btn btn-success" style="background-color: #f9e075; color: black;">
                                 <a href="{{ url_for('login') }}" class="nav-link">Login</a>
                             </button>
-                            <button style="background-color: #0492c2; color: black;">
+                            <button class="btn btn-warning" style="background-color: #0492c2; color: black;">
                                 <a href="{{ url_for('signup') }}" class="nav-link">Sign
                                 up</a>
                             </button>
