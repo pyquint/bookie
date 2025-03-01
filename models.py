@@ -60,3 +60,19 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f"<User {self.username}; Password Hash: {self.password_hash}; Date Created {self.date_created}>"
+
+
+class Comment(db.Model):
+    __tablename__ = "comments"
+
+    comment_id = db.Column(db.Integer, primary_key=True)
+    book_id = db.Column(db.Text, db.ForeignKey("books.book_id"))
+    uid = db.Column(db.Integer, db.ForeignKey("users.uid"))
+    comment = db.Column(db.Text, nullable=False)
+    date_created = db.Column(db.Text, nullable=False)
+
+    book = db.relationship("Book")
+    user = db.relationship("User")
+
+    def __repr__(self):
+        return f'<Comment: "{self.comment}"; UID: {self.uid}'

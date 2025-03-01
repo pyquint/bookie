@@ -1,34 +1,82 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Book Search
+    {{ book.title }}
 {% endblock title %}
 
 {% block content %}
+    <style>
+        .cke_notifications_area {
+            display: none;
+        }
+
+        .book-desc {
+            font-size: large;
+        }
+    </style>
+
     <div class="container-lg">
         <a href="{{ url_for('index') }}">Back to Home</a>
 
         <div class="book-content mt-4">
-
-            <h1>{{ book.title }}</h1>
+            <h1>
+                <strong>{{ book.title }}</strong>
+            </h1>
             <p>
                 <strong>Author:</strong> {{ book.author }}
             </p>
-            <p>
-                <strong>Date of Publication:</strong> {{ book.publish_date }}
-            </p>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <img class="img-fluid" src="{{ book.cover_img }}" alt="[no cover image avaiable]" />
+                </div>
+
+                <div class="col-md-8">
+                    <h2>Description:</h2>
+                    <p class="book-desc me-4">{{ book.description }}</p>
+                </div>
+            </div>
+
+            <strong>Date of Publication:</strong> {{ book.publish_date }}
             <p>
                 <strong>Publisher:</strong> {{ book.publisher }}
             </p>
 
-            <p class="text-justify">
-                <strong>Description:</strong> {{ book.description }}
-            </p>
+        </div>
 
-            <div>
-                <img src="{{ book.cover_img }}" alt="[no cover image avaiable]" />
+        <div class="bg-white">
+            <div class="m-2">
+                <h1>Comments:</h1>
+                {% for comment in comments %}
+                    <div class="card">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p>
+                                    {{ comment.user.username }}
+                                </div>
+                            </p>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h6 class="card-title">Comment > {{ book.title }}</h6>
+                                    <p class="card-text">{{ comment.comment | safe }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
         </div>
+
+        {% if current_user.is_authenticated %}
+            <div class="mt-4 mb-4">
+                <form method="post">
+                    {{ ckeditor.create() }}
+                    <div class="float-right"></div>
+                    <input class="btn btn-light mt-2 mb-4 float-end w-25" type="submit" name="comment" value="Post Comment" />
+                </form>
+            </div>
+        {% endif %}
     </div>
 
+    {{ ckeditor.load(pkg_type="basic") }}
 {% endblock content %}

@@ -1,9 +1,10 @@
 body {
-    background-image: url("/static/img/background_resized");
+    font-family: 'Inter';
+    background-color: Ivory;
+    // background-image: url("/static/img/background_resized.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    font-size: 80%
 }
 
 .book-thumb {
@@ -13,4 +14,24 @@ body {
 
 .text-justify {
     text-align: justify;
+}
+
+.text-center {
+    text-align: center;
+}
+
+@mixin headings {
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @content;
+    }
+}
+
+@include headings {
+    font-family: 'Montserrat';
 }

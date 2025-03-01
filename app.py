@@ -1,6 +1,6 @@
-import sass
 from argon2 import PasswordHasher
 from flask import Flask
+from flask_ckeditor import CKEditor
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -36,6 +36,9 @@ def create_app():
     register_routes(app, db, ph)
 
     migrate = Migrate(app, db)
+
+    ckeditor = CKEditor()
+    ckeditor.init_app(app)
 
     with app.app_context():
         if db.engine.url.drivername == "sqlite":

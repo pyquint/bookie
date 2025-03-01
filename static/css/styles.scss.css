@@ -1,9 +1,9 @@
 body {
-  background-image: url("/static/img/background.jpg");
+  font-family: 'Inter';
+  background-color: Ivory;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
-  font-size: 80%; }
+  background-repeat: no-repeat; }
 
 .book-thumb {
   max-width: 100px;
@@ -11,5 +11,16 @@ body {
 
 .text-justify {
   text-align: justify; }
+
+.text-center {
+  text-align: center; }
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Montserrat'; }
 
 /*# sourceMappingURL=styles.scss.css.map */

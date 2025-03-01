@@ -47,13 +47,16 @@ class SignupForm(FlaskForm):
     )
     submit = SubmitField("Sign Up")
 
-    def validate_username(self, field):
-        if User.query.filter_by(username=field.data).first():
-            raise ValidationError("Username already exists.")
+    def validate_username(self, username_form):
+        user = User.query.filter_by(username=username_form.data).first()
+        if user is not None:
+            raise ValidationError(
+                "Username already exists. Please use a different one."
+            )
 
 
 class LoginForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
-    login_cache = BooleanField("Remember Me")
+    remember_me = BooleanField("Remember Me")
     submit = SubmitField("Login")

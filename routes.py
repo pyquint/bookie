@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import markdown
 from flask import flash, redirect, render_template, request, session, url_for
 from flask_login import (
     LoginManager,
@@ -11,7 +12,7 @@ from flask_login import (
 )
 
 from forms import LoginForm, SignupForm
-from models import Book, User
+from models import Book, Comment, User
 
 
 def register_routes(app, db, ph):
@@ -60,15 +61,14 @@ def register_routes(app, db, ph):
             username = request.form.get("username")
             password = request.form.get("password")
 
-            user = User.query.filter_by(username=User.username).first()
+            user = User.query.filter_by(username=username).first()
 
             if user and user.check_password(password):
-                login_user(user)
+                login_user(user, remember=request.form.get("remember_me"))
                 flash("Logged in successfully.")
-                session["username"] = username
                 return redirect(url_for("index"))
             else:
-                flash("Login unsuccessful.")
+                flash("Invalid username or password.")
                 return redirect(url_for("index"))
 
     @app.route("/logout")
@@ -127,14 +127,45 @@ def register_routes(app, db, ph):
     def advanced_search():
         return render_template("advanced_search.html")
 
-    @app.route("/book/<book_id>")
+    @app.route("/book/<book_id>", methods=["GET", "POST"])
     def book(book_id):
         book = Book.query.get(book_id)
+
         if book is None:
             return redirect("/")
-        return render_template("book.html", book=book)
+
+        comments = Comment.query.filter(Comment.book_id == book_id)
+
+        if request.method == "POST":
+            comment = request.form.get("ckeditor")
+
+            if comment:
+                date_created = datetime.now().isoformat()
+
+                comment = Comment(
+                    book_id=book_id,
+                    uid=current_user.uid,
+                    comment=comment,
+                    date_created=date_created,
+                )
+
+                print()
+                print(comment)
+                print()
+                print(markdown.markdown(comment.comment))
+                print()
+
+                db.session.add(comment)
+                db.session.commit()
+
+        return render_template("book.html", book=book, comments=comments)
 
     @app.route("/user/<username>")
     def user(username):
         user = User.query.filter(User.username == username).first()
         return render_template("user.html", user=user)
+
+    @app.route("/settings")
+    @login_required
+    def settings():
+        return render_template("auth/settings.html")
