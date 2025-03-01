@@ -19,7 +19,7 @@
         }
     </style>
 
-    <div class="container-lg">
+    <div class="container">
         <h1>Search results:</h1>
         {% if results %}
             <div class="container input-group mb-4 mx-auto">
@@ -55,7 +55,7 @@
                                             <a href="{{ url_for('book', book_id=book.book_id) }}">{{ book.title
                                             }}</a>
                                         </h2>
-                                        <p class="card-text">Author: {{ book.author }}</p>
+                                        <p class="card-text">Author/s: {{ book.author }}</p>
                                         <p class="card-text">Published: {{ book.publish_date }}</p>
                                         <p class="card-text">ISBN: {{ book.isbn }}</p>
                                         <p class="card-text">Publisher: {{ book.publisher }}</p>
@@ -68,7 +68,7 @@
                     </div>
                 {% endfor %}
             </div>
-            <nav class="fixed-bottom" aria-label="pagination">
+            <nav aria-label="pagination">
                 <div class="mt-2 d-flex justify-content-center">
                     <ul class="pagination">
                         <!-- prev button -->

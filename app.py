@@ -46,4 +46,11 @@ def create_app():
         else:
             migrate.init_app(app, db)
 
+    # @app.template_filter
+    # def dateconversion(value):
+    #     try:
+    #         return value.strftime("%m/%d/%y")
+    #     except:
+    #         return "<date>"
+
     return app

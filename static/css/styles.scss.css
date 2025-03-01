@@ -3,7 +3,17 @@ body {
   background-color: Ivory;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat; }
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0; }
+
+footer {
+  min-height: 50px; }
+
+main {
+  flex: 1; }
 
 .book-thumb {
   max-width: 100px;
@@ -22,5 +32,22 @@ h4,
 h5,
 h6 {
   font-family: 'Montserrat'; }
+
+.register-block,
+.login-block {
+  margin-top: 64px;
+  background-color: #fffae1; }
+
+.cke_editable {
+  font-size: 32px;
+  line-height: 1.6;
+  /* Fix for missing scrollbars with RTL texts. (#10488) */
+  word-wrap: break-word; }
+
+#book-div {
+  background-color: #fffae1; }
+
+#comment-section {
+  margin-top: 50px; }
 
 /*# sourceMappingURL=styles.scss.css.map */

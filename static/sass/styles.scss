@@ -1,10 +1,27 @@
+$base-color: Ivory;
+$secondary-color: #fffae1;
+
 body {
     font-family: 'Inter';
-    background-color: Ivory;
+    background-color: $base-color;
     // background-image: url("/static/img/background_resized.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+
+    display: flex;
+    flex-direction: column;
+
+    min-height: 100vh;
+    margin: 0;
+}
+
+footer {
+    min-height: 50px;
+}
+
+main {
+    flex: 1;
 }
 
 .book-thumb {
@@ -34,4 +51,26 @@ body {
 
 @include headings {
     font-family: 'Montserrat';
+}
+
+.register-block,
+.login-block {
+    margin-top: 64px;
+    background-color: $secondary-color;
+}
+
+.cke_editable {
+    font-size: 32px;
+    line-height: 1.6;
+
+    /* Fix for missing scrollbars with RTL texts. (#10488) */
+    word-wrap: break-word;
+}
+
+#book-div {
+    background-color: $secondary-color;
+}
+
+#comment-section {
+    margin-top: 50px;
 }

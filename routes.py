@@ -1,10 +1,9 @@
-from datetime import datetime
+from datetime import date, datetime
 
 import markdown
 from flask import flash, redirect, render_template, request, session, url_for
+from flask_ckeditor.utils import cleanify
 from flask_login import (
-    LoginManager,
-    UserMixin,
     current_user,
     login_required,
     login_user,
@@ -16,6 +15,22 @@ from models import Book, Comment, User
 
 
 def register_routes(app, db, ph):
+    @app.template_filter("datebasic")
+    def datebasic(iso_string):
+        try:
+            return datetime.fromisoformat(iso_string).strftime("%B %d, %Y")
+        except ValueError:
+            return "No date found."
+
+    @app.template_filter("datehover")
+    def datehover(iso_string):
+        try:
+            return datetime.fromisoformat(iso_string).strftime(
+                "%a %b %d %Y %I:%M:%S %p %Z %z"
+            )
+        except ValueError:
+            return "No date found."
+
     @app.route("/", methods=["GET", "POST"])
     def index():
         return render_template("index.html")
@@ -54,10 +69,8 @@ def register_routes(app, db, ph):
 
     @app.route("/login", methods=["GET", "POST"])
     def login():
-        if request.method == "GET":
-            form = LoginForm()
-            return render_template("auth/login.html", form=form)
-        elif request.method == "POST":
+        form = LoginForm()
+        if form.validate_on_submit():
             username = request.form.get("username")
             password = request.form.get("password")
 
@@ -65,11 +78,14 @@ def register_routes(app, db, ph):
 
             if user and user.check_password(password):
                 login_user(user, remember=request.form.get("remember_me"))
-                flash("Logged in successfully.")
-                return redirect(url_for("index"))
+                # flash("Logged in successfully.")
+                next_redirect = request.form.get("next")
+                return redirect(next_redirect)
             else:
                 flash("Invalid username or password.")
                 return redirect(url_for("index"))
+
+        return render_template("auth/login.html", form=form)
 
     @app.route("/logout")
     def logout():
@@ -87,7 +103,6 @@ def register_routes(app, db, ph):
 
         sort = request.args.get("sort", "title")
         page = request.args.get("page", 1, type=int)
-        print("request:", request)
 
         sorted_query = query.order_by(
             getattr(
@@ -127,38 +142,38 @@ def register_routes(app, db, ph):
     def advanced_search():
         return render_template("advanced_search.html")
 
-    @app.route("/book/<book_id>", methods=["GET", "POST"])
+    @app.route("/book/<book_id>", methods=["GET"])
     def book(book_id):
         book = Book.query.get(book_id)
-
         if book is None:
             return redirect("/")
-
         comments = Comment.query.filter(Comment.book_id == book_id)
+        return render_template(
+            "book.html",
+            book=book,
+            from_results_page=request.referrer or url_for("index"),
+            comments=comments,
+        )
 
-        if request.method == "POST":
-            comment = request.form.get("ckeditor")
+    @app.post("/book/<book_id>")
+    def post_comment(book_id):
+        comment = cleanify(request.form.get("ckeditor"))
 
-            if comment:
-                date_created = datetime.now().isoformat()
+        if comment:
+            date_created = datetime.now().isoformat()
 
-                comment = Comment(
-                    book_id=book_id,
-                    uid=current_user.uid,
-                    comment=comment,
-                    date_created=date_created,
-                )
+            comment = Comment(
+                book_id=book_id,
+                uid=current_user.uid,
+                comment=comment,
+                date_created=date_created,
+            )
 
-                print()
-                print(comment)
-                print()
-                print(markdown.markdown(comment.comment))
-                print()
+            db.session.add(comment)
+            db.session.commit()
 
-                db.session.add(comment)
-                db.session.commit()
-
-        return render_template("book.html", book=book, comments=comments)
+        # prevents resubmitting of comment when reloadign the page immedately after posting
+        return redirect(url_for("book", book_id=book_id))
 
     @app.route("/user/<username>")
     def user(username):

@@ -16,66 +16,70 @@
     </style>
 
     <div class="container-lg">
-        <a href="{{ url_for('index') }}">Back to Home</a>
+        <a href="{{ from_results_page }}">Back</a>
 
-        <div class="book-content mt-4">
-            <h1>
-                <strong>{{ book.title }}</strong>
-            </h1>
-            <p>
-                <strong>Author:</strong> {{ book.author }}
-            </p>
+        <div class="mt-4 p-4 rounded-4 border border-warning-subtle" id="book-div">
+            <div id="book-content">
+                <h1>
+                    <strong>{{ book.title }}</strong>
+                </h1>
+                <p>
+                    <strong>Author/s:</strong> {{ book.author }}
+                </p>
 
-            <div class="row">
-                <div class="col-md-4">
-                    <img class="img-fluid" src="{{ book.cover_img }}" alt="[no cover image avaiable]" />
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <img class="img-fluid" src="{{ book.cover_img }}" alt="[no cover image avaiable]" />
+                    </div>
+
+                    <div class="col-md-8">
+                        <h2>Description:</h2>
+                        <p class="book-desc me-4">{{ book.description }}</p>
+                    </div>
                 </div>
 
-                <div class="col-md-8">
-                    <h2>Description:</h2>
-                    <p class="book-desc me-4">{{ book.description }}</p>
-                </div>
+                <strong>Date of Publication:</strong> {{ book.publish_date }}
+                <p>
+                    <strong>Publisher:</strong> {{ book.publisher }}
+                </p>
             </div>
 
-            <strong>Date of Publication:</strong> {{ book.publish_date }}
-            <p>
-                <strong>Publisher:</strong> {{ book.publisher }}
-            </p>
-
-        </div>
-
-        <div class="bg-white">
-            <div class="m-2">
-                <h1>Comments:</h1>
+            <div id="comment-section">
+                <h1 class="pb-4 mb-4 border-bottom border-secondary">Comments > {{ book.title }}</h1>
                 {% for comment in comments %}
-                    <div class="card">
+                    <div class="card mb-2">
                         <div class="row">
-                            <div class="col-md-4">
-                                <p>
-                                    {{ comment.user.username }}
-                                </div>
-                            </p>
-                            <div class="col-md-8">
+                            <div class="col ps-4">
+                                <p class="m-3">{{ comment.user.username }}</p>
+                            </div>
+                            <div class="col-md-10">
                                 <div class="card-body">
-                                    <h6 class="card-title">Comment > {{ book.title }}</h6>
+                                    <p class="card-title text-muted text-small" title="{{ comment.date_created | datehover }}">
+                                        {{ comment.date_created | datebasic }}
+                                    </p>
                                     <p class="card-text">{{ comment.comment | safe }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 {% endfor %}
+
+                <div class="mt-4 pb-4">
+                    {% if current_user.is_authenticated %}
+                        <form method="post">
+                            <div class="mb-4">
+                                {{ ckeditor.create() }}
+                                <input class="btn btn-warning float-end mt-3 w-25" type="submit" name="comment" value="Post Comment" />
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="border border-rounded p-4">
+                            <h2 class="text-center p-4">You need to be logged in to comment</h2>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
-
-        {% if current_user.is_authenticated %}
-            <div class="mt-4 mb-4">
-                <form method="post">
-                    {{ ckeditor.create() }}
-                    <div class="float-right"></div>
-                    <input class="btn btn-light mt-2 mb-4 float-end w-25" type="submit" name="comment" value="Post Comment" />
-                </form>
-            </div>
-        {% endif %}
     </div>
 
     {{ ckeditor.load(pkg_type="basic") }}

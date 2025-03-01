@@ -3,7 +3,6 @@ from flask_login import UserMixin
 
 from app import db, ph
 
-
 class Book(db.Model):
     __tablename__ = "books"
 
