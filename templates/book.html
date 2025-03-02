@@ -13,6 +13,17 @@
         .book-desc {
             font-size: large;
         }
+
+        #comment-section blockquote {
+            border-left: 5px solid #ccc;
+            padding-right: 8px;
+            padding: 2px 0;
+            padding-left: 20px;
+        }
+
+        blockquote p {
+            display: inline-block;
+        }
     </style>
 
     <div class="container-lg">
@@ -50,7 +61,7 @@
                     <div class="card mb-2">
                         <div class="row">
                             <div class="col ps-4">
-                                <p class="m-3">{{ comment.user.username }}</p>
+                                <p class="m-3 fw-bold">{{ comment.user.username }}</p>
                             </div>
                             <div class="col-md-10">
                                 <div class="card-body">
@@ -60,6 +71,17 @@
                                     <p class="card-text">{{ comment.comment | safe }}</p>
                                 </div>
                             </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-link"
+                                        onclick="quoteComment({{ comment.comment_id }}, '{{ comment.user.username }}')">
+                                    Quote
+                                </button>
+                                {% if comment.user.username == current_user.username %}
+                                    <button class="btn btn-link">
+                                        <a href="{{ url_for('delete_comment', book_id=book.book_id, comment_id=comment.comment_id) }}">Delete</a>
+                                    </button>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
@@ -68,7 +90,8 @@
                     {% if current_user.is_authenticated %}
                         <form method="post">
                             <div class="mb-4">
-                                {{ ckeditor.create() }}
+                                {# I am using native html/js ckeditor here instead of flask in order to use the js script #}
+                                <textarea class="form-control" name="commentbox" id="commentbox" required></textarea>
                                 <input class="btn btn-warning float-end mt-3 w-25" type="submit" name="comment" value="Post Comment" />
                             </div>
                         </form>
@@ -82,5 +105,7 @@
         </div>
     </div>
 
-    {{ ckeditor.load(pkg_type="basic") }}
+    {{ ckeditor.load() }}
+    <script src="{{ url_for('static', filename='/js/comment.js') }}"></script>
+
 {% endblock content %}

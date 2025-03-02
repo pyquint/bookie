@@ -1,3 +1,4 @@
+import json
 from datetime import date, datetime
 
 import markdown
@@ -157,7 +158,8 @@ def register_routes(app, db, ph):
 
     @app.post("/book/<book_id>")
     def post_comment(book_id):
-        comment = cleanify(request.form.get("ckeditor"))
+        print(request.form.get("ckeditor"))
+        comment = markdown.markdown(cleanify(request.form.get("commentbox")))
 
         if comment:
             date_created = datetime.now().isoformat()
@@ -173,6 +175,21 @@ def register_routes(app, db, ph):
             db.session.commit()
 
         # prevents resubmitting of comment when reloadign the page immedately after posting
+        return redirect(url_for("book", book_id=book_id))
+
+    @app.route("/get_comment")
+    def get_comment():
+        comment_id = request.args.get("comment_id", "")
+        comment = Comment.query.filter_by(comment_id=comment_id).first()
+        comment_dict = comment.__dict__
+        comment_dict.pop("_sa_instance_state")
+        return json.dumps(comment_dict)
+
+    @app.route("/book/<book_id>/delete_comment?<comment_id>")
+    def delete_comment(book_id, comment_id):
+        print(comment_id)
+        Comment.query.filter_by(comment_id=comment_id).delete()
+        db.session.commit()
         return redirect(url_for("book", book_id=book_id))
 
     @app.route("/user/<username>")

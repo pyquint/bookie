@@ -3,6 +3,7 @@ from flask_login import UserMixin
 
 from app import db, ph
 
+
 class Book(db.Model):
     __tablename__ = "books"
 
@@ -74,4 +75,4 @@ class Comment(db.Model):
     user = db.relationship("User")
 
     def __repr__(self):
-        return f'<Comment: "{self.comment}"; UID: {self.uid}'
+        return f'<Comment ID: {self.comment_id}; Comment: "{self.comment}"; UID: {self.uid}>'
