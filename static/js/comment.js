@@ -1,7 +1,5 @@
 $(function () {
-    $(document).ready(function () {
-        CKEDITOR.replace("commentbox");
-    });
+    CKEDITOR.replace("commentbox");
 });
 
 function quoteComment(comment_id, op) {
@@ -22,13 +20,7 @@ function quoteComment(comment_id, op) {
 
     function _quote(Comment, op) {
         $("html, body").animate({ scrollTop: $(document).height() - $(window).height() });
-
         const editor = CKEDITOR.instances.commentbox;
-
-        editor.focus();
-        editor.setData("<blockquote>" + Comment.comment + "</blockquote><p></p>");
-        editor.model.change((writer) => {
-            writer.setSelection(writer.createPositionAt(editor.model.document.getRoot(), "end"));
-        });
+        editor.insertHtml("<blockquote>" + Comment.comment + "</blockquote><br/>");
     }
 }

@@ -159,7 +159,7 @@ def register_routes(app, db, ph):
     @app.post("/book/<book_id>")
     def post_comment(book_id):
         print(request.form.get("ckeditor"))
-        comment = markdown.markdown(cleanify(request.form.get("commentbox")))
+        comment = markdown.markdown(request.form.get("commentbox"))
 
         if comment:
             date_created = datetime.now().isoformat()
