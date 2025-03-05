@@ -66,8 +66,8 @@ class Comment(db.Model):
     __tablename__ = "comments"
 
     comment_id = db.Column(db.Integer, primary_key=True)
-    book_id = db.Column(db.Text, db.ForeignKey("books.book_id"))
-    uid = db.Column(db.Integer, db.ForeignKey("users.uid"))
+    book_id = db.Column(db.Text, db.ForeignKey("books.book_id"), nullable=False)
+    uid = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
     comment = db.Column(db.Text, nullable=False)
     date_created = db.Column(db.Text, nullable=False)
 

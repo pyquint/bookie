@@ -5,59 +5,7 @@
 {% endblock title %}
 
 {% block content %}
-    <style>
-        .entry-thumb {
-            object-fit: cover;
-            width: 100%;
-            height: 100%;
-            border-radius: 10px;
-        }
-
-        .search-bar {
-            width: 75px;
-        .card-custom {
-            display: flex;
-            flex-direction: row;
-            overflow: hidden;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
-        }
-
-        .card-custom:hover {
-            transform: scale(1.02);
-        }
-
-        .card-body {
-            padding: 15px;
-        }
-
-        .sort-container {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .sort-container label {
-            margin-right: 10px;
-            font-weight: bold;
-        }
-
-        .pagination input {
-            width: 60px;
-            text-align: center;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 40px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #888;
-        }
-    </style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 
     <div class="container">
         <h1 class="mb-4">Search Results</h1>
