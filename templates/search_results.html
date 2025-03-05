@@ -5,8 +5,7 @@
 {% endblock title %}
 
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-
+\\
     <div class="container">
         <h1 class="mb-4">Search Results</h1>
 
@@ -34,7 +33,7 @@
                 {% for book in results %}
                     <div class="col-md-6">
                         <div class="card card-custom">
-                            <div class="col-md-4 p-0">
+                            <div class="col-md-4 p-0 d-flex align-items-center justify-content-center">
                                 <a href="{{ url_for('book', book_id=book.book_id) }}">
                                     <img src="{{ book.cover_img }}" class="entry-thumb" alt="Book Cover" />
                                 </a>
@@ -59,9 +58,9 @@
                 {% endfor %}
             </div>
 
-            <!-- Pagination -->
-            <nav aria-label="pagination">
-                <div class="mt-3 d-flex justify-content-center">
+            <!-- Pagination Moved to Bottom & Centered -->
+            <div class="pagination-container">
+                <nav aria-label="pagination">
                     <ul class="pagination">
                         <!-- Previous Button -->
                         <li class="page-item {% if not prev_page_url %}disabled{% endif %}">
@@ -98,8 +97,8 @@
                             <a href="{{ next_page_url or '#' }}" class="page-link">»</a>
                         </li>
                     </ul>
-                </div>
-            </nav>
+                </nav>
+            </div>
 
         {% else %}
             <p class="no-results">No results found for your search.</p>
