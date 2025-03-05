@@ -7,82 +7,124 @@
 {% block content %}
     <style>
         .entry-thumb {
-            display: block;
             object-fit: cover;
-            width: 32vh;
+            width: 100%;
             height: 100%;
+            border-radius: 10px;
         }
 
         .search-bar {
             width: 75px;
+        .card-custom {
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .card-custom:hover {
+            transform: scale(1.02);
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .sort-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sort-container label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .pagination input {
+            width: 60px;
             text-align: center;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #888;
         }
     </style>
 
     <div class="container">
-        <h1>Search results:</h1>
+        <h1 class="mb-4">Search Results</h1>
+
         {% if results %}
-            <div class="container input-group mb-4 mx-auto">
+            <!-- Sort Options -->
+            <div class="sort-container">
                 <form role="sort" action="{{ url_for('search') }}" method="get" id="sort-results">
-                    <!-- keeping search parameters when changing sort attribute -->
                     <input type="hidden" name="title" value="{{ args.title }}" />
                     <input type="hidden" name="author" value="{{ args.author }}" />
                     <input type="hidden" name="isbn" value="{{ args.isbn }}" />
                     <input type="hidden" name="publisher" value="{{ args.publisher }}" />
                     <input type="hidden" name="page" value="1" />
+
                     <label for="sort">Sort by:</label>
-                    <select name="sort" class="form-select dropdown-toggle" id="sortby" onchange="this.form.submit()">
-                        <!-- <option value="" {{ selected if args.sort=='relevance' }}>Relevance</option> -->
+                    <select name="sort" class="form-select" id="sortby" onchange="this.form.submit()">
                         <option value="title" {% if args.sort=='title' %}selected{% endif %}>Title</option>
                         <option value="pages" {% if args.sort=='pages' %}selected{% endif %}>Pages</option>
                         <option value="ratings" {% if args.sort=='ratings' %}selected{% endif %}>Ratings</option>
                     </select>
                 </form>
             </div>
-            <div class="container d-flex flex-wrap">
+
+            <!-- Book Results -->
+            <div class="row">
                 {% for book in results %}
-                    <div class="card rounded-4 w-50">
-                        <div class="row g-0 d-flex">
-                            <div class="col-lg-4 entry-thumb">
+                    <div class="col-md-6">
+                        <div class="card card-custom">
+                            <div class="col-md-4 p-0">
                                 <a href="{{ url_for('book', book_id=book.book_id) }}">
-                                    <img src="{{ book.cover_img }}" class="rounded-4 entry-thumb" alt="book cover" />
+                                    <img src="{{ book.cover_img }}" class="entry-thumb" alt="Book Cover" />
                                 </a>
                             </div>
-                            <div class="col">
+                            <div class="col-md-8">
                                 <div class="card-body">
-                                    <div>
-                                        <h2 class="card-title">
-                                            <a href="{{ url_for('book', book_id=book.book_id) }}">{{ book.title
-                                            }}</a>
-                                        </h2>
-                                        <p class="card-text">Author/s: {{ book.author }}</p>
-                                        <p class="card-text">Published: {{ book.publish_date }}</p>
-                                        <p class="card-text">ISBN: {{ book.isbn }}</p>
-                                        <p class="card-text">Publisher: {{ book.publisher }}</p>
-                                        <p class="card-text">Pages: {{ book.pages }}</p>
-                                        <p class="card-text">Ratings: {{ "{:,.2f}".format(book.num_ratings) }}</p>
-                                    </div>
+                                    <h4 class="card-title">
+                                        <a href="{{ url_for('book', book_id=book.book_id) }}" class="text-dark">
+                                            {{ book.title }}
+                                        </a>
+                                    </h4>
+                                    <p class="mb-1"><strong>Author(s):</strong> {{ book.author }}</p>
+                                    <p class="mb-1"><strong>Published:</strong> {{ book.publish_date }}</p>
+                                    <p class="mb-1"><strong>ISBN:</strong> {{ book.isbn }}</p>
+                                    <p class="mb-1"><strong>Publisher:</strong> {{ book.publisher }}</p>
+                                    <p class="mb-1"><strong>Pages:</strong> {{ book.pages }}</p>
+                                    <p class="mb-1"><strong>Ratings:</strong> {{ "{:,.2f}".format(book.num_ratings) }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 {% endfor %}
             </div>
+
+            <!-- Pagination -->
             <nav aria-label="pagination">
-                <div class="mt-2 d-flex justify-content-center">
+                <div class="mt-3 d-flex justify-content-center">
                     <ul class="pagination">
-                        <!-- prev button -->
-                        <li class="page-item">
-                            <a href="{{ prev_page_url }}"
-                               class="page-link {{ 'disabled' if not prev_page_url }}"
-                               aria-labe="Previous">
-                                <span aria-hidden="true">«</span>
-                            </a>
+                        <!-- Previous Button -->
+                        <li class="page-item {% if not prev_page_url %}disabled{% endif %}">
+                            <a href="{{ prev_page_url or '#' }}" class="page-link">«</a>
                         </li>
-                        <!-- page number input -->
+
+                        <!-- Page Number Input -->
                         <li class="page-item disabled">
-                            <a class="page-link">Page</a>
+                            <span class="page-link">Page</span>
                         </li>
+
                         <form action="{{ url_for('search') }}" method="get">
                             <input type="hidden" name="title" value="{{ args.title }}" />
                             <input type="hidden" name="author" value="{{ args.author }}" />
@@ -91,29 +133,28 @@
                             <input type="hidden" name="sort" value="{{ args.sort }}" />
 
                             <input type="number"
-                                   class="form-control rounded-0"
+                                   class="form-control"
                                    name="page"
                                    value="{{ results.page }}"
                                    min="1"
                                    max="{{ results.pages }}"
                                    required />
                         </form>
-                        <!-- next page -->
-                        <li class="page-item">
-                            <a class="page-link disabled">of {{
-                                results.pages
-                            }}</a>
+
+                        <li class="page-item disabled">
+                            <span class="page-link">of {{ results.pages }}</span>
                         </li>
-                        <li class="page-item">
-                            <a href="{{ next_page_url }}"
-                               class="page-link {{ 'disabled' if not next_page_url }}"
-                               aria-label="Next"><span aria-hidden="true">»</span></a>
+
+                        <!-- Next Button -->
+                        <li class="page-item {% if not next_page_url %}disabled{% endif %}">
+                            <a href="{{ next_page_url or '#' }}" class="page-link">»</a>
                         </li>
                     </ul>
                 </div>
             </nav>
+
         {% else %}
-            <p>No results found for your search.</p>
+            <p class="no-results">No results found for your search.</p>
         {% endif %}
     </div>
 {% endblock content %}
