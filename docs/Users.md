@@ -1,6 +1,6 @@
 This document defines the implementation of user accounts in the Bookie app.
 
-# SQLite schema
+# User schema
 ```sql
 CREATE TABLE IF NOT EXISTS users (
     uid INTEGER,
@@ -11,29 +11,25 @@ CREATE TABLE IF NOT EXISTS users (
     PRIMARY KEY (uid, username)
 );
 ```
+
+```python
+class User(db.Model, UserMixin):
+    __tablename__ = "users"
+
+    uid = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.Text, nullable=False, unique=True)
+    email = db.Column(db.Text, nullable=False)
+    date_created = db.Column(db.Text, nullable=False)
+    password_hash = db.Column(db.Text, nullable=False)
+```
+
 Sqlite3 does not have a native `DATIMETIME` data type. To circumvent, we store the `date_created` field as a `TEXT` compliant to [ISO 8901](https://en.wikipedia.org/wiki/ISO_8601).
 
-Read also: [SQLite3 Date And Time Functions](https://sqlite.org/lang_datefunc.html)
+See also: [SQLite3 Date And Time Functions](https://sqlite.org/lang_datefunc.html)
+
+
 
 # WTForms
-\[code from: [Unique validator in WTForms with SQLAlchemy models](https://stackoverflow.com/questions/5685831/unique-validator-in-wtforms-with-sqlalchemy-models)]
-```python
-class Unique(object):
-    def __init__(self, model, field, message=None):
-        self.model = model
-        self.field = field
-        if not message:
-            message = "This element already exists."
-        self.message = message
-
-    def __call__(self, form, field):
-        check = self.model.query.filter(self.field == field.data).first()
-        if check:
-            raise ValidationError(self.message)
-```
-The `Unique` class is a custom validator to check the presence of a form field value in a specific database table field, and gives an error if so.
-
-
 ```python
 class SignupForm(FlaskForm):
         "Username",

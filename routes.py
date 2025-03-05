@@ -1,9 +1,8 @@
 import json
-from datetime import date, datetime
+from datetime import datetime
 
 import markdown
 from flask import flash, redirect, render_template, request, session, url_for
-from flask_ckeditor.utils import cleanify
 from flask_login import (
     current_user,
     login_required,
