@@ -25,11 +25,3 @@ CREATE TABLE IF NOT EXISTS books (
     bbe_votes INTEGER,
     price REAL
 );
-
-CREATE TABLE IF NOT EXISTS users (
-    uid INTEGER PRIMARY KEY,
-    username TEXT,
-    email TEXT,
-    date_created TEXT,
-    password_hash TEXT
-);

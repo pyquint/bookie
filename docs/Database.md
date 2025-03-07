@@ -27,7 +27,7 @@ class Book(db.Model):
     edition = db.Column(db.Text, nullable=True)
     pages = db.Column(db.Integer, nullable=True)
     publisher = db.Column(db.Text, nullable=True)
-    publish_date = db.Column(db.Text, nullable=True)
+    publish_date = db.Column(db.Text, nullable=True)    first_publish_date = db.Column(db.Text, nullable=True)
     awards = db.Column(db.Text, nullable=True)
     num_ratings = db.Column(db.Float, nullable=True)
     ratings_by_stars = db.Column(db.Text, nullable=True)

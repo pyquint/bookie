@@ -1,49 +1,54 @@
 @echo off
 
-set db_dir="..\instance"
-set db_file="%db_dir%\bookie.db"
-set dataset="best_books_dataset.csv"
+set script_dir=%~dp0
+set root_dir=%script_dir%..\
+set db_file=%root_dir%bookie.db
 
-echo Deleting existing bookie.db file...
-if exist %db_file% (
-    del %db_file%
-)
+set dataset_name=best_books_dataset.csv
+set dataset_path=%script_dir%%dataset_name%
 
-echo Checking if setup.sql exists...
-if not exist setup.sql (
-    echo 'setup.sql' file does not exist. Exiting...
+set database_name=bookie.db
+set database_path=%root_dir%%database_name%
+
+echo Script directory: %script_dir%
+echo Root directory: %root_dir%
+echo Dataset path: %dataset_path%& echo.
+
+echo Checking if %dataset_name% exists in the script directory...
+if not exist %dataset_path% (
+    echo  %dataset_name% not found. Exiting...
     pause
     exit /b 1
 )
+echo %dataset_name% exists.& echo.
 
-echo Checking if the dataset csv ("best_books_dataset.csv") file exists...
-if not exist %dataset% (
-    echo "Dataset file not found. Exiting..."
+echo Checking if %database_name% exists in the root directory...
+if not exist %database_path% (
+    echo %database_name% not found. Creating one...
+    sqlite3 %database_name% ""
+    echo %database_name% created.& echo.
     pause
     exit /b 1
 )
+echo %database_name% exists.& echo.
 
-echo Check if instance folder exists...
-if not exist %db_dir% (
-    echo 'instance' folder does not exist. Creating it now...
-    mkdir %db_dir%
-)
+echo Dropping `books` table...
+sqlite3 %db_file% "DROP TABLE IF EXISTS books;"
+echo `books` table deleted.& echo.
 
-echo Running setup.sql...
-sqlite3 %db_file% < "setup.sql"
+echo Creating `books` table...
+sqlite3 %db_file% < %script_dir%setup.sql
+echo Done creating `books` table.& echo.
 
-echo Importing database...
-sqlite3 %db_file% ".mode csv" ".import %dataset% books"
+echo Books the database...
+sqlite3 %db_file% ".mode csv" ".import %dataset_path% books"
+echo Done importing %dataset_name%.& echo.
 
-@REM echo Checking if fts.sql exists...
-@REM if not exist fts.sql (
-@REM     echo 'fts.sql' file does not exist. Exiting...
-@REM     pause
-@REM     exit /b 1
-@REM )
+echo Syncing database with Flask-Migrate...
+echo flask db upgrade.& echo.
+flask db upgrade
+echo Done.& echo.
 
-@REM echo Initializing FTS5...
-@REM sqlite3 %db_file% < "fts.sql"
 
-echo Database setup completed successfully.
+echo Database setup + sync completed successfully.
 pause
