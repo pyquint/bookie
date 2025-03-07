@@ -8,39 +8,76 @@ Developed in Python and Flask, using SQLite as the database.
 2. View **book information**, **descriptions**, **ratings**, and more.
 
 # Todo
-- [ ] Add advanced search filtering (multiple search criterias, filter by genre or rating, etc.).
-- [ ] Add flexible sorting of search results, e.g. by rating, publication date, alphabetical, etc.
+- [x] Add advanced search filtering (multiple search criterias, filter by genre or rating, etc.).
+- [x] Add flexible sorting of search results, e.g. by rating, publication date, alphabetical, etc.
+  - [ ] Sort by ascending or descending order.
 - [ ] Implement search keyword autocomplete.
 - [ ] Improve web design. Least priority.
 
-# Development Setup
-Controbutions to the project are welcome! The steps below are for Windows only, but with a few tweaks they can also apply to Unix/macOS.
+# Installation
+The process below are specifically for Windows only, but with a few tweaks to the commands they also apply to Unix/macOS or other operating system.
 
+## Prerequisites
+- [git](https://git-scm.com/)
+- [Python](https://www.python.org/) 3.13.2
+- [SQLite](https://www.sqlite.org/) version 3.49.0
+
+## Steps
 Follow the steps below to set up your local development environment:
 
-1. Create a project directory and set up a virtual environment.
-
+1. Clone the repository then go to the project directory.
 ```
-python -m venv .venv
-```
-
-2. Activate the virtual environment.
-```
-.venv\Scripts\activate
+> git clone https://github.com/pyquint/bookie.git
+> cd bookie
 ```
 
-3. Install required dependencies listed in `requirements.txt`.
+> The prompt should then look something like this:
+> ```
+> bookie>
+> ```
+
+2. Set up a virtual environment.
 
 ```
-python -m pip install -r requirements.txt
+bookie> python -m venv .venv
 ```
 
-4. Navigate to the `data` folder and run the setup script to create database.
+3. Activate the virtual environment.
+```
+bookie> .venv\Scripts\activate
+```
+
+> The prompt should then look something like this:
+> ```
+> (.venv) bookie>
+> ```
+
+4. Install the required dependencies listed in `requirements.txt`.
 
 ```
-cd path\to\bookie\data
+(.venv) bookie> python -m pip install -r requirements.txt
 ```
 
+5. Run the setup script.
+
 ```
-setup.bat
+(.venv) bookie> cd data
+(.venv) bookie\data> setup.bat
 ```
+or
+
+```
+(.venv) bookie> data\setup.bat
+```
+
+6. Run the application.
+```
+(.venv) bookie> flask run
+```
+
+7. Open the development server URL (http://127.0.0.1:5000/) on your preferred browser.
+
+8. Enjoy!
+
+# Contribution
+Any help to the project are welcome! Although, please follow and/or maintain the particular formatting done by the author. Thank you!
