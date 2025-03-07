@@ -16,6 +16,25 @@ body {
     margin: 0;
 }
 
+input[type='number'] {
+    -moz-appearance: textfield;
+    /*For FireFox*/
+
+    &::-webkit-inner-spin-button {
+        /*For Webkits like Chrome and Safari*/
+        -webkit-appearance: none;
+        margin: 0;
+    }
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+    outline: none;
+    outline-width: 0px;
+}
+
 footer {
     min-height: 50px;
 }
@@ -24,10 +43,6 @@ main {
     flex: 1;
 }
 
-.book-thumb {
-    max-width: 100px;
-    max-height: 150px;
-}
 
 .text-justify {
     text-align: justify;
@@ -84,7 +99,7 @@ main {
 
 .container {
     width: 80%;
-    margin-top: 20px;
+    // margin-top: 20px;
 }
 
 
@@ -108,12 +123,6 @@ main {
     padding: 15px;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     text-align: center;
-}
-
-.book-card img {
-    width: 150px;
-    height: 200px;
-    background: gray;
 }
 
 .navbar {
@@ -149,8 +158,8 @@ main {
 }
 
 .form-control {
-    border-radius: 50px;
-    padding: 8px 15px;
+    border-radius: 0px;
+    //     padding: 8px 15px;
 }
 
 .btn-custom {
@@ -175,36 +184,9 @@ main {
 }
 
 
-
-
-.entry-thumb {
-    object-fit: cover;
-    width: 100%;
-    height: 100%;
-    border-radius: 10px;
-}
-
-.card-custom {
-    display: flex;
-    flex-direction: row;
-    overflow: hidden;
-    margin-bottom: 20px;
-    border-radius: 10px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s;
-
-    &:hover {
-        transform: scale(1.02);
-    }
-}
-
-.card-body {
-    padding: 15px;
-}
-
 .sort-container {
     display: flex;
-    justify-content: flex-end;
+    // justify-content: flex-end;
     align-items: center;
     margin-bottom: 20px;
 
@@ -227,3 +209,62 @@ main {
     color: #888;
 }
 
+.card-book-thumb {
+    object-fit: cover;
+}
+
+.card-custom {
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+
+    &:hover {
+        transform: scale(1.02);
+    }
+}
+
+
+@media (min-width: 993px) {
+    $book-thumb-width: 200px;
+    $book-thumb-height: $book-thumb-width * 1.6;
+
+    .book-thumb,
+    .card-book-thumb {
+        height: $book-thumb-height;
+        max-width: $book-thumb-width;
+        width: $book-thumb-width;
+        max-height: $book-thumb-height;
+    }
+
+    .result-card-body {
+        max-height: $book-thumb-height;
+        height: $book-thumb-height;
+    }
+}
+
+@media (max-width: 992px) and (min-width: 0px) {
+    $book-thumb-width: 150px;
+    $book-thumb-height: $book-thumb-width * 1.6;
+
+    .book-thumb,
+    .card-book-thumb {
+        height: $book-thumb-height;
+        max-width: $book-thumb-width;
+        width: $book-thumb-width;
+        max-height: $book-thumb-height;
+    }
+
+    .result-card-body {
+        max-height: $book-thumb-height;
+        height: $book-thumb-height;
+    }
+
+    .card-custom {
+        max-width: $book-thumb-width * 5;
+        margin-bottom: 10px;
+    }
+}

@@ -5,9 +5,8 @@
 {% endblock title %}
 
 {% block content %}
-\\
-    <div class="container">
-        <h1 class="mb-4">Search Results</h1>
+    <div class="container-md">
+        <h1 class="mt-4 mb-4">Search Results</h1>
 
         {% if results %}
             <!-- Sort Options -->
@@ -31,26 +30,36 @@
             <!-- Book Results -->
             <div class="row">
                 {% for book in results %}
-                    <div class="col-md-6">
+                    <div class="col-lg-6">
                         <div class="card card-custom">
-                            <div class="col-md-4 p-0 d-flex align-items-center justify-content-center">
+                            <div class="col p-0 d-flex card-book-thumb">
                                 <a href="{{ url_for('book', book_id=book.book_id) }}">
-                                    <img src="{{ book.cover_img }}" class="entry-thumb" alt="Book Cover" />
+                                    <img src="{{ book.cover_img }}" class="book-thumb" alt="Book Cover" />
                                 </a>
                             </div>
-                            <div class="col-md-8">
-                                <div class="card-body">
+                            <div class="col">
+                                <div class="card-body result-card-body overflow-y-scroll">
                                     <h4 class="card-title">
-                                        <a href="{{ url_for('book', book_id=book.book_id) }}" class="text-dark">
-                                            {{ book.title }}
-                                        </a>
+                                        <a href="{{ url_for('book', book_id=book.book_id) }}" class="text-dark">{{ book.title }}</a>
                                     </h4>
-                                    <p class="mb-1"><strong>Author(s):</strong> {{ book.author }}</p>
-                                    <p class="mb-1"><strong>Published:</strong> {{ book.publish_date }}</p>
-                                    <p class="mb-1"><strong>ISBN:</strong> {{ book.isbn }}</p>
-                                    <p class="mb-1"><strong>Publisher:</strong> {{ book.publisher }}</p>
-                                    <p class="mb-1"><strong>Pages:</strong> {{ book.pages }}</p>
-                                    <p class="mb-1"><strong>Ratings:</strong> {{ "{:,.2f}".format(book.num_ratings) }}</p>
+                                    <p class="mb-1">
+                                        <strong>Author(s):</strong> {{ book.author }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Published:</strong> {{ book.publish_date }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>ISBN:</strong> {{ book.isbn }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Publisher:</strong> {{ book.publisher }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Pages:</strong> {{ book.pages }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Ratings:</strong> {{ "{:,.2f}".format(book.num_ratings) }}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -58,8 +67,7 @@
                 {% endfor %}
             </div>
 
-            <!-- Pagination Moved to Bottom & Centered -->
-            <div class="pagination-container">
+            <div class="pagination-container d-flex justify-content-center">
                 <nav aria-label="pagination">
                     <ul class="pagination">
                         <!-- Previous Button -->
