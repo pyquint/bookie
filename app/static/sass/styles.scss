@@ -68,6 +68,13 @@ main {
     font-family: 'Montserrat';
 }
 
+$header-logo-size: 64px;
+
+#header-logo {
+    max-width: $header-logo-size;
+    max-height: $header-logo-size;
+}
+
 .register-block,
 .login-block {
     margin-top: 64px;
@@ -267,4 +274,24 @@ main {
         max-width: $book-thumb-width * 5;
         margin-bottom: 10px;
     }
+}
+
+.book-info>p {
+    margin-bottom: 20px;
+}
+
+.book-title {
+    margin-bottom: 20px
+}
+
+button.comment-action {
+    margin-top: 0px;
+    margin: 0px;
+    padding-top: 0px;
+    padding-bottom: 1.5rem !important;
+}
+
+p.comment-username {
+    margin-top: 1rem;
+    margin-left: 1rem;
 }

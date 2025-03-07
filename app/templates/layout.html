@@ -25,20 +25,22 @@
     </head>
 
     <body>
-        <header class="p-2" id="header-template">
+        <header id="header-template">
             <nav class="navbar navbar-expand-md navbar-light">
                 <div class="container-lg d-flex flex-wrap justify-content-center justify-content-lg-start align-items-center">
 
-                    <a class="navbar-brand" href="{{ url_for('index') }}" id="logo">[logo]</a>
+                    <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                        <img src="{{ url_for('static', filename='img/bookie-nobg.png') }}" alt="Bookie" id="header-logo" />
+                    </a>
 
                     <ul class="nav col-12 col-lg-auto me-lg-auto justify-content-center mb-lg-0 align-items-center">
                         <a href="#" class="nav-link px-2">Book Catalogue</a>
                         <a href="#" class="nav-link px-2">My Books</a>
-                        <a href="{{ url_for('advanced_search') }}" class="nav-link px-2">Advanced Search</a>
+                        <a href="{{ url_for('main.advanced_search') }}" class="nav-link px-2">Advanced Search</a>
                     </ul>
 
                     <form role="search"
-                          action="{{ url_for('search') }}"
+                          action="{{ url_for('main.search') }}"
                           method="get"
                           id="simple-search"
                           class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
@@ -75,10 +77,10 @@
                         <!-- login and singup or profile picture -->
                         {% if not current_user.is_authenticated %}
                             <button class="btn btn-success">
-                                <a href="{{ url_for('login', next=request.url) }}" class="nav-link">Login</a>
+                                <a href="{{ url_for('auth.login', next=request.url) }}" class="nav-link">Login</a>
                             </button>
                             <button class="btn btn-warning">
-                                <a href="{{ url_for('signup') }}" class="nav-link">Sign
+                                <a href="{{ url_for('auth.signup') }}" class="nav-link">Sign
                                 up</a>
                             </button>
                         {% else %}
@@ -88,13 +90,13 @@
                                    aria-expanded="false">{{ current_user.username }}</a>
                                 <ul class="dropdown-menu text-small">
                                     <li>
-                                        <a class="dropdown-item" href="{{ url_for('user', username=current_user.username) }}">Your Profile</a>
+                                        <a class="dropdown-item" href="{{ url_for('main.user', username=current_user.username) }}">Your Profile</a>
                                     </li>
                                     <li>
                                         <hr class="dropdown-divider" />
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="{{ url_for('logout') }}">Log Out</a>
+                                        <a class="dropdown-item" href="{{ url_for('auth.logout') }}">Log Out</a>
                                     </li>
                                 </ul>
                             </div>

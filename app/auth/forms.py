@@ -8,23 +8,7 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Regexp
 
-from models import User
-
-
-class Unique(object):
-    """validator that checks field uniqueness"""
-
-    def __init__(self, model, field, message=None):
-        self.model = model
-        self.field = field
-        if not message:
-            message = "This element already exists."
-        self.message = message
-
-    def __call__(self, form, field):
-        check = self.model.query.filter(self.field == field.data).first()
-        if check:
-            raise ValidationError(self.message)
+from app.models import User
 
 
 class SignupForm(FlaskForm):

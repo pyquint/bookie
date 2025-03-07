@@ -6,7 +6,7 @@
     <div class="container d-flex justify-content-center align-items-start min-vh-100 mt-5">
         <div class="card shadow-lg p-4 w-50">
             <h2 class="text-center mb-4">Advanced Search</h2>
-            <form role="search" action="{{ url_for('search') }}" method="get" id="advanced-search">
+            <form role="search" action="{{ url_for('main.search') }}" method="get" id="advanced-search">
                 <div class="mb-3">
                     <label for="title" class="form-label">Title</label>
                     <input type="text" class="form-control" name="title" id="title" />

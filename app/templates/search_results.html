@@ -11,7 +11,7 @@
         {% if results %}
             <!-- Sort Options -->
             <div class="sort-container">
-                <form role="sort" action="{{ url_for('search') }}" method="get" id="sort-results">
+                <form role="sort" action="{{ url_for('main.search') }}" method="get" id="sort-results">
                     <input type="hidden" name="title" value="{{ args.title }}" />
                     <input type="hidden" name="author" value="{{ args.author }}" />
                     <input type="hidden" name="isbn" value="{{ args.isbn }}" />
@@ -33,14 +33,14 @@
                     <div class="col-lg-6">
                         <div class="card card-custom">
                             <div class="col p-0 d-flex card-book-thumb">
-                                <a href="{{ url_for('book', book_id=book.book_id) }}">
+                                <a href="{{ url_for('main.book', book_id=book.book_id) }}">
                                     <img src="{{ book.cover_img }}" class="book-thumb" alt="Book Cover" />
                                 </a>
                             </div>
                             <div class="col">
                                 <div class="card-body result-card-body overflow-y-scroll">
                                     <h4 class="card-title">
-                                        <a href="{{ url_for('book', book_id=book.book_id) }}" class="text-dark">{{ book.title }}</a>
+                                        <a href="{{ url_for('main.book', book_id=book.book_id) }}" class="text-dark">{{ book.title }}</a>
                                     </h4>
                                     <p class="mb-1">
                                         <strong>Author(s):</strong> {{ book.author }}
@@ -80,7 +80,7 @@
                             <span class="page-link">Page</span>
                         </li>
 
-                        <form action="{{ url_for('search') }}" method="get">
+                        <form action="{{ url_for('main.search') }}" method="get">
                             <input type="hidden" name="title" value="{{ args.title }}" />
                             <input type="hidden" name="author" value="{{ args.author }}" />
                             <input type="hidden" name="isbn" value="{{ args.isbn }}" />

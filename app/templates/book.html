@@ -14,69 +14,87 @@
             font-size: large;
         }
 
-        #comment-section blockquote {
+        div#comment-section .card-body {
+            padding-bottom: 0px;
+        }
+
+        div#comment-section blockquote {
             border-left: 5px solid #ccc;
             padding-right: 8px;
             padding-left: 20px;
         }
+
+        div#comment-section table {
+            margin-bottom: 2rem;
+        }
+
+        div#comment-section>div.card>div.row>div {
+            padding-left: 2rem;
+        }
     </style>
 
     <div class="container-lg">
-        <a href="{{ from_results_page }}">Back</a>
 
         <div class="mt-4 p-4 rounded-4 border border-warning-subtle" id="book-div">
+            <a class="mb-2" href="{{ from_results_page }}">Back</a>
+
             <div id="book-content">
-                <h1>
+                <h1 class="book-title">
                     <strong>{{ book.title }}</strong>
                 </h1>
-                <p>
-                    <strong>Author/s:</strong> {{ book.author }}
-                </p>
 
                 <div class="row mb-3">
                     <div class="col-md-4">
-                        <img class="img-fluid" src="{{ book.cover_img }}" alt="[no cover image avaiable]" />
+                        <img class="img-fluid w-100 border rounded-2" src="{{ book.cover_img }}" alt="[no cover image avaiable]" />
                     </div>
 
                     <div class="col-md-8">
                         <h2>
                             <strong>Description:</strong>
                         </h2>
+                        <p>
+                            <strong>Author/s:</strong> {{ book.author }}
+                        </p>
                         <p class="book-desc me-4">{{ book.description }}</p>
                     </div>
                 </div>
 
-                <strong>Date of Publication:</strong> {{ book.publish_date }}
+                <p>
+                    <strong>Date of Publication:</strong> {{ book.publish_date }}
+                </p>
                 <p>
                     <strong>Publisher:</strong> {{ book.publisher }}
                 </p>
             </div>
 
             <div id="comment-section">
-                <h1 class="pb-4 mb-4 border-bottom border-secondary">Comments > {{ book.title }}</h1>
+                <h1 class="border-bottom border-secondary">
+                    Comments: <span class="text-muted fst-italic">{{ book.title }}</span>
+                </h1>
                 {% for comment in comments %}
                     <div class="card mb-2">
                         <div class="row">
-                            <div class="col-sm-2 d-flex flex-column">
-                                <p class="m-3 fw-bold">{{ comment.user.username }}</p>
-                                <div class="mt-auto pb-4">
-                                    <button class="btn btn-link"
+                            <div class="col-sm-2 d-flex flex-column ps-4 border-end border-light-subtle">
+                                <p class="comment-username fw-bold">{{ comment.user.username }}</p>
+                                <div>
+                                    <button class="btn btn-link comment-action"
                                             onclick="quoteComment({{ comment.comment_id }}, '{{ comment.user.username }}')">
                                         Quote
                                     </button>
                                     {% if comment.user.username == current_user.username %}
-                                        <button class="btn btn-link">
-                                            <a href="{{ url_for('delete_comment', book_id=book.book_id, comment_id=comment.comment_id) }}">Delete</a>
+                                        <button class="btn btn-link comment-action">
+                                            <a href="{{ url_for('main.delete_comment', book_id=book.book_id, comment_id=comment.comment_id) }}">Delete</a>
                                         </button>
                                     {% endif %}
                                 </div>
                             </div>
                             <div class="col-sm-10">
-                                <div class="card-body">
-                                    <p class="card-title text-muted text-small" title="{{ comment.date_created | datehover }}">
-                                        {{ comment.date_created | datebasic }}
+                                <div class="card-body ">
+                                    <p class="card-title text-muted text-small mb-3"
+                                       title="{{ comment.date_created_fmt('%a %b %d %Y %I:%M:%S %p %Z %z') }}">
+                                        {{ comment.date_created_fmt("%B %d, %Y") }}
                                     </p>
-                                    <div class="card-text me-4">{{ comment.comment | safe }}</div>
+                                    <div class="card-text">{{ comment.comment | safe }}</div>
                                 </div>
                             </div>
                         </div>

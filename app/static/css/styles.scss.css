@@ -44,6 +44,10 @@ h5,
 h6 {
   font-family: 'Montserrat'; }
 
+#header-logo {
+  max-width: 64px;
+  max-height: 64px; }
+
 .register-block,
 .login-block {
   margin-top: 64px;
@@ -191,5 +195,21 @@ h6 {
   .card-custom {
     max-width: 750px;
     margin-bottom: 10px; } }
+
+.book-info > p {
+  margin-bottom: 20px; }
+
+.book-title {
+  margin-bottom: 20px; }
+
+button.comment-action {
+  margin-top: 0px;
+  margin: 0px;
+  padding-top: 0px;
+  padding-bottom: 1.5rem !important; }
+
+p.comment-username {
+  margin-top: 1rem;
+  margin-left: 1rem; }
 
 /*# sourceMappingURL=styles.scss.css.map */

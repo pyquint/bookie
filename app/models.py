@@ -1,7 +1,14 @@
+from datetime import datetime
+
 from argon2.exceptions import VerifyMismatchError
 from flask_login import UserMixin
 
-from app import db, ph
+from app import db, login_manager, ph
+
+
+@login_manager.user_loader
+def load_user(uid):
+    return User.query.get(uid)
 
 
 class Book(db.Model):
@@ -22,6 +29,7 @@ class Book(db.Model):
     pages = db.Column(db.Integer, nullable=True)
     publisher = db.Column(db.Text, nullable=True)
     publish_date = db.Column(db.Text, nullable=True)
+    first_publish_date = db.Column(db.Text, nullable=True)
     awards = db.Column(db.Text, nullable=True)
     num_ratings = db.Column(db.Float, nullable=True)
     ratings_by_stars = db.Column(db.Text, nullable=True)
@@ -76,3 +84,6 @@ class Comment(db.Model):
 
     def __repr__(self):
         return f'<Comment ID: {self.comment_id}; Comment: "{self.comment}"; UID: {self.uid}>'
+
+    def date_created_fmt(self, fmt):
+        return datetime.fromisoformat(self.date_created).strftime(fmt)
