@@ -131,7 +131,7 @@ h6 {
   .navbar-brand:hover {
     transform: scale(1.02); }
 
-.navbar .nav-link {
+.navbar .nav-links .nav-link {
   color: #474d12; }
 
 .search-container {
