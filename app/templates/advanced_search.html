@@ -1,27 +1,29 @@
 {% extends "layout.html" %}
 
-{% block title %}Advanced Search{% endblock title %}
+{% block title %}
+    Advanced Search
+{% endblock title %}
 
 {% block content %}
     <div class="container d-flex justify-content-center align-items-start min-vh-100 mt-5">
-        <div class="card shadow-lg p-4 w-50">
+        <div class="card p-4 w-50 styled-container">
             <h2 class="text-center mb-4">Advanced Search</h2>
             <form role="search" action="{{ url_for('main.search') }}" method="get" id="advanced-search">
                 <div class="mb-3">
                     <label for="title" class="form-label">Title</label>
-                    <input type="text" class="form-control" name="title" id="title" />
+                    <input type="text" class="form-control rounded" name="title" id="title" />
                 </div>
                 <div class="mb-3">
                     <label for="author" class="form-label">Author</label>
-                    <input type="text" class="form-control" name="author" id="author" />
+                    <input type="text" class="form-control rounded" name="author" id="author" />
                 </div>
                 <div class="mb-3">
                     <label for="isbn" class="form-label">ISBN</label>
-                    <input type="text" class="form-control" name="isbn" id="isbn" />
+                    <input type="text" class="form-control rounded" name="isbn" id="isbn" />
                 </div>
                 <div class="mb-3">
                     <label for="publisher" class="form-label">Publisher</label>
-                    <input type="text" class="form-control" name="publisher" id="publisher" />
+                    <input type="text" class="form-control rounded" name="publisher" id="publisher" />
                 </div>
                 <input type="hidden" name="page" value="1" />
                 <div class="text-center">

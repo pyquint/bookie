@@ -1,12 +1,13 @@
 import json
-from datetime import datetime
 
 import markdown
+import sqlalchemy as sa
 from flask import redirect, render_template, request, url_for
 from flask_login import (
     current_user,
     login_required,
 )
+from sqlalchemy import desc
 
 from app import db
 from app.main import bp
@@ -21,22 +22,28 @@ def index():
 
 @bp.route("/search", methods=["GET"])
 def search():
-    query = Book.query
+    query = sa.select(Book)
+    all = request.args.get("all", "true")
 
-    for column in Book.__table__.columns:
-        if arg_value := request.args.get(column.name):
-            query = query.filter(getattr(Book, column.name).like(f"%{arg_value}%"))
+    if all == "false":
+        for column in Book.__table__.columns:
+            if arg_value := request.args.get(column.name):
+                print(arg_value)
+                query = query.filter(getattr(Book, column.name).like(f"%{arg_value}%"))
 
-    sort = request.args.get("sort", "title")
+    sort = request.args.get("sort", "num_ratings")
     page = request.args.get("page", 1, type=int)
+    order = request.args.get("order", "desc")
+    per_page = request.args.get("per_page", 10, type=int)
 
-    sorted_query = query.order_by(
-        getattr(Book, "num_ratings" if sort == "ratings" else sort if sort else "title")
-    )
-    results = sorted_query.all()
+    sortby_attr = getattr(Book, sort)
 
-    per_page = 10
-    results = sorted_query.paginate(page=page, per_page=per_page, error_out=False)
+    if order == "desc":
+        sorted_query = query.order_by(desc(sortby_attr))
+    else:
+        sorted_query = query.order_by(sortby_attr)
+
+    results = db.paginate(sorted_query, page=page, per_page=per_page, error_out=False)
 
     params = request.args.to_dict()
     params.pop("page")
@@ -77,7 +84,11 @@ def book(book_id):
     return render_template(
         "book.html",
         book=book,
-        from_results_page=request.referrer or url_for("main.index"),
+        from_results_page=(
+            request.referrer
+            if request.referrer != request.url
+            else url_for("main.index")
+        ),
         comments=comments,
     )
 
@@ -88,13 +99,13 @@ def post_comment(book_id):
     comment = markdown.markdown(request.form.get("commentbox"))
 
     if comment:
-        date_created = datetime.now().isoformat()
+        # date_created = datetime.now().isoformat()
 
         comment = Comment(
             book_id=book_id,
-            uid=current_user.uid,
+            user_id=current_user.id,
             comment=comment,
-            date_created=date_created,
+            # date_created=date_created,
         )
 
         db.session.add(comment)
@@ -107,16 +118,15 @@ def post_comment(book_id):
 @bp.route("/get_comment")
 def get_comment():
     comment_id = request.args.get("comment_id", "")
-    comment = Comment.query.filter_by(comment_id=comment_id).first()
+    comment = Comment.query.filter_by(id=comment_id).first()
     comment_dict = comment.__dict__
     comment_dict.pop("_sa_instance_state")
-    return json.dumps(comment_dict)
+    return json.dumps(comment_dict, default=str)
 
 
 @bp.route("/book/<book_id>/delete_comment?<comment_id>")
 def delete_comment(book_id, comment_id):
-    print(comment_id)
-    Comment.query.filter_by(comment_id=comment_id).delete()
+    Comment.query.filter_by(id=comment_id).delete()
     db.session.commit()
     return redirect(url_for("main.book", book_id=book_id))
 

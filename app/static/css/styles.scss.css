@@ -1,6 +1,9 @@
+a {
+  color: #0d58c9; }
+
 body {
   font-family: 'Inter';
-  background-color: Ivory;
+  background: linear-gradient(to bottom right, #f8f7e3, #fbffe6, #f1ecd6);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -9,9 +12,13 @@ body {
   min-height: 100vh;
   margin: 0; }
 
+header nav {
+  background: linear-gradient(to right, Ivory, #fafdde, Ivory); }
+
 input[type='number'] {
-  -moz-appearance: textfield;
-  /*For FireFox*/ }
+  /*For FireFox*/
+  appearance: textfield;
+  -moz-appearance: textfield; }
   input[type='number']::-webkit-inner-spin-button {
     /*For Webkits like Chrome and Safari*/
     -webkit-appearance: none;
@@ -42,16 +49,36 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Montserrat'; }
+  font-family: "Montserrat"; }
+
+.bg-hero {
+  padding-top: 75px; }
+
+.text-hero * {
+  font-family: "Lexend";
+  color: #28282B; }
+
+.text-hero .main-hero {
+  font-weight: bold;
+  padding-bottom: 30px; }
+
+.text-hero .lead-hero {
+  font-weight: bold;
+  font-size: 1.2rem; }
+
+.app-name {
+  font-family: "Lexend";
+  color: #fad542;
+  font-weight: 600; }
+
+.app-name-emphasis {
+  color: #FEEB9C;
+  font-weight: 800;
+  text-shadow: 4px 2px #837b0d; }
 
 #header-logo {
-  max-width: 64px;
-  max-height: 64px; }
-
-.register-block,
-.login-block {
-  margin-top: 64px;
-  background-color: #fffae1; }
+  max-width: 50px;
+  max-height: 50px; }
 
 .cke_editable {
   font-size: 32px;
@@ -60,10 +87,11 @@ h6 {
   word-wrap: break-word; }
 
 #book-div {
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
   background-color: #fffae1; }
 
 #comment-section {
-  margin-top: 50px; }
+  margin-top: 1.75rem; }
 
 #advanced-search .form-control {
   margin-bottom: 12px; }
@@ -93,26 +121,18 @@ h6 {
 .navbar {
   width: 100%;
   background-color: #f8f9fa;
-  padding: 15px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); }
+  border-bottom: 2px; }
 
 .navbar-brand {
-  font-size: 1.7rem;
-  font-weight: bold;
-  color: #333; }
+  margin-right: 3.4rem; }
+  .navbar-brand:hover {
+    transform: scale(1.02); }
 
-.navbar-nav .nav-link {
-  color: #333;
-  font-size: 1.1rem;
-  margin: 0 12px;
-  position: relative;
-  text-transform: uppercase; }
-
-.navbar-nav .nav-link:hover {
-  color: #cac7c7; }
+.navbar .nav-link {
+  color: #474d12; }
 
 .search-container {
   max-width: 550px; }
@@ -174,32 +194,71 @@ h6 {
 @media (min-width: 993px) {
   .book-thumb,
   .card-book-thumb {
+    height: 400px;
+    max-width: 250px;
+    width: 250px;
+    max-height: 400px; }
+  .result-card-body {
+    max-height: 400px;
+    height: 400px; } }
+
+@media (max-width: 992px) and (min-width: 0px) {
+  .book-thumb,
+  .card-book-thumb {
     height: 320px;
     max-width: 200px;
     width: 200px;
     max-height: 320px; }
   .result-card-body {
     max-height: 320px;
-    height: 320px; } }
-
-@media (max-width: 992px) and (min-width: 0px) {
-  .book-thumb,
-  .card-book-thumb {
-    height: 240px;
-    max-width: 150px;
-    width: 150px;
-    max-height: 240px; }
-  .result-card-body {
-    max-height: 240px;
-    height: 240px; }
+    height: 320px;
+    padding-left: 32px; }
   .card-custom {
-    max-width: 750px;
+    max-width: 1000px;
     margin-bottom: 10px; } }
 
-.book-info > p {
-  margin-bottom: 20px; }
-
 .book-title {
+  font-family: "Lexend";
+  margin: 0px; }
+
+.book-card-title {
+  color: #707091;
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+  font-weight: 500; }
+
+.book-page-title {
+  font-size: 3.4rem;
+  padding-top: 8px;
+  font-weight: 400; }
+
+img.book-thumb-front,
+img.book-thumb-back {
+  position: absolute; }
+
+.book-thumb-front {
+  z-index: 2; }
+
+.book-thumb-back {
+  z-index: 1; }
+
+.book-thumb-front {
+  object-fit: cover;
+  padding: 16px; }
+
+.book-thumb-back {
+  filter: blur(5px);
+  zoom: 128%; }
+
+.result-card-body {
+  padding-top: 32px;
+  padding-left: 25px; }
+
+.card-body-col {
+  z-index: 3;
+  background-image: linear-gradient(to top, #fdf8d3, Ivory); }
+
+.book-info > p {
   margin-bottom: 20px; }
 
 button.comment-action {
@@ -211,5 +270,25 @@ button.comment-action {
 p.comment-username {
   margin-top: 1rem;
   margin-left: 1rem; }
+
+.book-title {
+  letter-spacing: 0rem; }
+
+.auth-container,
+.styled-container {
+  margin-top: 64px;
+  background-color: #fffae1;
+  background: linear-gradient(to bottom right, #fcfbe8, #fbffe6, #fffbe6); }
+
+.auth-container .form-control-label {
+  margin-top: 4px;
+  margin-bottom: 4px; }
+
+.auth-login-container,
+.auth-forgot-password-container {
+  width: 344px; }
+
+.auth-signup-container {
+  width: 400px; }
 
 /*# sourceMappingURL=styles.scss.css.map */

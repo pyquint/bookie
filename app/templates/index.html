@@ -5,7 +5,35 @@
 {% endblock title %}
 
 {% block content %}
-    <div class="container-lg">
-        <div class="row justify-content-center"></div>
+
+    <style>
+        .bg-hero {
+            background-image: url('static/img/bg-hero.jpg');
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.75), rgba(255, 0, 0, 0)),
+                url('static/img/bg-hero.jpg');
+            background-size: cover;
+            max-height: 100%;
+            height: 100vh;
+        }
+    </style>
+
+    <div class="bg-hero">
+        <div class="container">
+            <div class="row p-4 pb-0 pe-lg-0 pt-lg-5 align-items-center hero-section">
+                <div class=" col-lg-7 p-3 p-lg-5 pt-lg-3 text-hero">
+                    <h1 class="display-2 fw-bold lh-1 main-hero">
+                        Track your
+                        <br />
+                        reading journey
+                        <br />
+                        with <span class="app-name app-name-emphasis">Bookie</span>
+                    </h1>
+                    <p class="lead-hero">
+                        Discover stories that captivate, inspire, and transport you to new worlds. Our carefully curated catalog offers books for every mood, passion, and adventure. Find your next unforgettable read — because every page holds the power to ignite your imagination.
+                    </p>
+                </div>
+                <div class="col-lg-5"></div>
+            </div>
+        </div>
     </div>
 {% endblock content %}

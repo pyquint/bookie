@@ -14,6 +14,10 @@
             font-size: large;
         }
 
+        div#book-content p {
+            margin-bottom: 0px;
+        }
+
         div#comment-section .card-body {
             padding-bottom: 0px;
         }
@@ -36,41 +40,38 @@
     <div class="container-lg">
 
         <div class="mt-4 p-4 rounded-4 border border-warning-subtle" id="book-div">
-            <a class="mb-2" href="{{ from_results_page }}">Back</a>
+            <a class="mb-4" href="{{ from_results_page }}">< Back</a>
 
             <div id="book-content">
-                <h1 class="book-title">
-                    <strong>{{ book.title }}</strong>
-                </h1>
-
-                <div class="row mb-3">
+                <h1 class="book-title book-page-title">{{ book.title }}</h1>
+                <hr />
+                <div class="row">
                     <div class="col-md-4">
                         <img class="img-fluid w-100 border rounded-2" src="{{ book.cover_img }}" alt="[no cover image avaiable]" />
                     </div>
 
                     <div class="col-md-8">
+                        <p>
+                            <strong>Author/s:</strong> {{ book.author }}
+                            <br />
+                            <strong>Date of Publication:</strong> {{ book.publish_date }}
+                            <br />
+                            <strong>Publisher:</strong> {{ book.publisher }}
+                            <br />
+                            <br />
+                        </p>
                         <h2>
                             <strong>Description:</strong>
                         </h2>
-                        <p>
-                            <strong>Author/s:</strong> {{ book.author }}
-                        </p>
                         <p class="book-desc me-4">{{ book.description }}</p>
                     </div>
                 </div>
-
-                <p>
-                    <strong>Date of Publication:</strong> {{ book.publish_date }}
-                </p>
-                <p>
-                    <strong>Publisher:</strong> {{ book.publisher }}
-                </p>
             </div>
 
             <div id="comment-section">
-                <h1 class="border-bottom border-secondary">
-                    Comments: <span class="text-muted fst-italic">{{ book.title }}</span>
-                </h1>
+                <h4 class="border-bottom border-secondary">
+                    Comments on: <span class="text-muted book-title">{{ book.title }}</span>
+                </h4>
                 {% for comment in comments %}
                     <div class="card mb-2">
                         <div class="row">
@@ -78,12 +79,12 @@
                                 <p class="comment-username fw-bold">{{ comment.user.username }}</p>
                                 <div>
                                     <button class="btn btn-link comment-action"
-                                            onclick="quoteComment({{ comment.comment_id }}, '{{ comment.user.username }}')">
+                                            onclick="quoteComment({{ comment.id }}, '{{ comment.user.username }}')">
                                         Quote
                                     </button>
                                     {% if comment.user.username == current_user.username %}
                                         <button class="btn btn-link comment-action">
-                                            <a href="{{ url_for('main.delete_comment', book_id=book.book_id, comment_id=comment.comment_id) }}">Delete</a>
+                                            <a href="{{ url_for('main.delete_comment', book_id=book.book_id, comment_id=comment.id) }}">Delete</a>
                                         </button>
                                     {% endif %}
                                 </div>

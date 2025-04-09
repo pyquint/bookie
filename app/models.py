@@ -1,7 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import Optional
 
+import sqlalchemy as sa
 from argon2.exceptions import VerifyMismatchError
 from flask_login import UserMixin
+from sqlalchemy.orm import Mapped, WriteOnlyMapped, mapped_column, relationship
 
 from app import db, login_manager, ph
 
@@ -14,31 +17,33 @@ def load_user(uid):
 class Book(db.Model):
     __tablename__ = "books"
 
-    book_id = db.Column(db.Text, primary_key=True)
-    isbn = db.Column(db.Text, nullable=False)
-    title = db.Column(db.Text, nullable=False)
-    series = db.Column(db.Text, nullable=True)
-    author = db.Column(db.Text, nullable=True)
-    rating = db.Column(db.Float, nullable=True)
-    description = db.Column(db.Text, nullable=True)
-    language = db.Column(db.Text, nullable=True)
-    genres = db.Column(db.Text, nullable=True)
-    characters = db.Column(db.Text, nullable=True)
-    book_format = db.Column(db.Text, nullable=True)
-    edition = db.Column(db.Text, nullable=True)
-    pages = db.Column(db.Integer, nullable=True)
-    publisher = db.Column(db.Text, nullable=True)
-    publish_date = db.Column(db.Text, nullable=True)
-    first_publish_date = db.Column(db.Text, nullable=True)
-    awards = db.Column(db.Text, nullable=True)
-    num_ratings = db.Column(db.Float, nullable=True)
-    ratings_by_stars = db.Column(db.Text, nullable=True)
-    liked_percent = db.Column(db.Float, nullable=True)
-    setting = db.Column(db.Text, nullable=True)
-    cover_img = db.Column(db.Text, nullable=True)
-    bbe_score = db.Column(db.Float, nullable=True)
-    bbe_votes = db.Column(db.Integer, nullable=True)
-    price = db.Column(db.Float, nullable=True)
+    book_id: Mapped[str] = mapped_column(primary_key=True, unique=True)
+    title: Mapped[str] = mapped_column(index=True)
+    series: Mapped[Optional[str]] = mapped_column()
+    author: Mapped[str] = mapped_column(index=True)
+    rating: Mapped[float] = mapped_column(sa.Float)
+    description: Mapped[Optional[str]] = mapped_column()
+    language: Mapped[str] = mapped_column()
+    isbn: Mapped[str] = mapped_column()
+    genres: Mapped[str] = mapped_column()
+    characters: Mapped[str] = mapped_column()
+    book_format: Mapped[Optional[str]] = mapped_column()
+    edition: Mapped[Optional[str]] = mapped_column()
+    pages: Mapped[Optional[int]] = mapped_column()
+    publisher: Mapped[Optional[str]] = mapped_column()
+    publish_date: Mapped[Optional[str]] = mapped_column()
+    first_publish_date: Mapped[Optional[str]] = mapped_column()
+    awards: Mapped[str] = mapped_column()
+    num_ratings: Mapped[float] = mapped_column(sa.Float)
+    ratings_by_stars: Mapped[str] = mapped_column()
+    liked_percent: Mapped[float] = mapped_column(sa.Float)
+    setting: Mapped[str] = mapped_column()
+    cover_img: Mapped[str] = mapped_column()
+    bbe_score: Mapped[int] = mapped_column()
+    bbe_votes: Mapped[int] = mapped_column()
+    price: Mapped[Optional[float]] = mapped_column(sa.Float)
+
+    # comments: WriteOnlyMapped["Comment"] = relationship(back_populates="book")
 
     def __repr__(self):
         return f"<Book {self.title} by {self.author}>"
@@ -47,14 +52,21 @@ class Book(db.Model):
 class User(db.Model, UserMixin):
     __tablename__ = "users"
 
-    uid = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.Text, nullable=False, unique=True)
-    email = db.Column(db.Text, nullable=False)
-    date_created = db.Column(db.Text, nullable=False)
-    password_hash = db.Column(db.Text, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(sa.String(64), index=True, unique=True)
+    email: Mapped[str] = mapped_column(sa.String(128), index=True, unique=True)
+    password_hash: Mapped[str] = mapped_column(sa.String(256))
+    date_created: Mapped[datetime] = mapped_column(
+        index=True, default=lambda: datetime.now(timezone.utc)
+    )
+    pp: Mapped[str] = mapped_column(
+        sa.String(256), default="static/uploads/pp/book.png"
+    )
+
+    comments: WriteOnlyMapped["Comment"] = relationship(back_populates="user")
 
     def get_id(self):
-        return self.uid
+        return self.id
 
     def set_password(self, password):
         self.password_hash = ph.hash(password)
@@ -67,23 +79,26 @@ class User(db.Model, UserMixin):
             return False
 
     def __repr__(self):
-        return f"<User {self.username}; Password Hash: {self.password_hash}; Date Created {self.date_created}>"
+        return f"<[ID: {self.id}] User {self.username}>"
 
 
 class Comment(db.Model):
     __tablename__ = "comments"
 
-    comment_id = db.Column(db.Integer, primary_key=True)
-    book_id = db.Column(db.Text, db.ForeignKey("books.book_id"), nullable=False)
-    uid = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
-    comment = db.Column(db.Text, nullable=False)
-    date_created = db.Column(db.Text, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    comment: Mapped[str] = mapped_column()
+    date_created: Mapped[datetime] = mapped_column(
+        index=True, default=lambda: datetime.now(timezone.utc)
+    )
 
-    book = db.relationship("Book")
-    user = db.relationship("User")
+    # book: Mapped[Book] = relationship(back_populates="comments")
+    book_id: Mapped[str] = mapped_column(db.ForeignKey(Book.book_id))
+
+    user: Mapped[User] = relationship(back_populates="comments")
+    user_id: Mapped[int] = mapped_column(db.ForeignKey(User.id), index=True)
 
     def __repr__(self):
-        return f'<Comment ID: {self.comment_id}; Comment: "{self.comment}"; UID: {self.uid}>'
+        return f'<[ID: {self.id}] Comment "{self.comment}">'
 
     def date_created_fmt(self, fmt):
-        return datetime.fromisoformat(self.date_created).strftime(fmt)
+        return self.date_created.strftime(fmt)

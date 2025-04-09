@@ -6,9 +6,9 @@
 
 {% block content %}
     <div class="container-md">
-        <h1 class="mt-4 mb-4">Search Results</h1>
+        <h1 class="mt-4 mb-4">Search Results:</h1>
 
-        {% if results %}
+        {% if results.items %}
             <!-- Sort Options -->
             <div class="sort-container">
                 <form role="sort" action="{{ url_for('main.search') }}" method="get" id="sort-results">
@@ -16,14 +16,31 @@
                     <input type="hidden" name="author" value="{{ args.author }}" />
                     <input type="hidden" name="isbn" value="{{ args.isbn }}" />
                     <input type="hidden" name="publisher" value="{{ args.publisher }}" />
+                    <input type="hidden" name="sort" value="{{ args.sort }}" />
+                    <input type="hidden" name="order" id="order" value="{{ args.order }}" />
+
                     <input type="hidden" name="page" value="1" />
 
                     <label for="sort">Sort by:</label>
-                    <select name="sort" class="form-select" id="sortby" onchange="this.form.submit()">
-                        <option value="title" {% if args.sort=='title' %}selected{% endif %}>Title</option>
-                        <option value="pages" {% if args.sort=='pages' %}selected{% endif %}>Pages</option>
-                        <option value="ratings" {% if args.sort=='ratings' %}selected{% endif %}>Ratings</option>
-                    </select>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select name="sort" class="form-select" id="sortby" onchange="this.form.submit()">
+                                <option value="title" {% if args.sort=='title' %}selected{% endif %}>Title</option>
+                                <option value="pages" {% if args.sort=='pages' %}selected{% endif %}>Pages</option>
+                                <option value="num_ratings" {% if args.sort=='num_ratings' %}selected{% endif %}>Ratings</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-success border" id="order-btn" type="button">
+                                Order
+                                {% if args.order=='asc' %}
+                                    ↓
+                                {% else %}
+                                    ↑
+                                {% endif %}
+                            </button>
+                        </div>
+                    </div>
                 </form>
             </div>
 
@@ -34,32 +51,36 @@
                         <div class="card card-custom">
                             <div class="col p-0 d-flex card-book-thumb">
                                 <a href="{{ url_for('main.book', book_id=book.book_id) }}">
-                                    <img src="{{ book.cover_img }}" class="book-thumb" alt="Book Cover" />
+                                    <img src="{{ book.cover_img }}" class="book-thumb book-thumb-front" alt="book cover" />
+                                    <img src="{{ book.cover_img }}" class="book-thumb book-thumb-back" alt="" />
                                 </a>
                             </div>
-                            <div class="col">
+                            <div class="col card-body-col">
                                 <div class="card-body result-card-body overflow-y-scroll">
-                                    <h4 class="card-title">
-                                        <a href="{{ url_for('main.book', book_id=book.book_id) }}" class="text-dark">{{ book.title }}</a>
+                                    <h4 class="card-title book-title book-card-title">
+                                        <a href="{{ url_for('main.book', book_id=book.book_id) }}" class="text-decoration-none">{{ book.title }}</a>
                                     </h4>
-                                    <p class="mb-1">
-                                        <strong>Author(s):</strong> {{ book.author }}
-                                    </p>
-                                    <p class="mb-1">
-                                        <strong>Published:</strong> {{ book.publish_date }}
-                                    </p>
-                                    <p class="mb-1">
-                                        <strong>ISBN:</strong> {{ book.isbn }}
-                                    </p>
-                                    <p class="mb-1">
-                                        <strong>Publisher:</strong> {{ book.publisher }}
-                                    </p>
-                                    <p class="mb-1">
-                                        <strong>Pages:</strong> {{ book.pages }}
-                                    </p>
-                                    <p class="mb-1">
-                                        <strong>Ratings:</strong> {{ "{:,.2f}".format(book.num_ratings) }}
-                                    </p>
+                                    <hr />
+                                    <div class="text-muted">
+                                        <p class="mb-1">
+                                            <strong>Author(s):</strong> {{ book.author }}
+                                        </p>
+                                        <p class="mb-1">
+                                            <strong>Published:</strong> {{ book.publish_date }}
+                                        </p>
+                                        <p class="mb-1">
+                                            <strong>ISBN:</strong> {{ book.isbn }}
+                                        </p>
+                                        <p class="mb-1">
+                                            <strong>Publisher:</strong> {{ book.publisher }}
+                                        </p>
+                                        <p class="mb-1">
+                                            <strong>Pages:</strong> {{ book.pages }}
+                                        </p>
+                                        <p class="mb-1">
+                                            <strong>Ratings:</strong> {{ "{:,.2f}".format(book.num_ratings) }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -107,7 +128,6 @@
                     </ul>
                 </nav>
             </div>
-
         {% else %}
             <p class="no-results">No results found for your search.</p>
         {% endif %}

@@ -1,10 +1,15 @@
 $base-color: Ivory;
 $secondary-color: #fffae1;
+$header-logo-size: 50px;
+$hyperlink-color: #0d58c9;
+
+a {
+    color: $hyperlink-color
+}
 
 body {
     font-family: 'Inter';
-    background-color: $base-color;
-    // background-image: url("/static/img/background_resized.jpg");
+    background: linear-gradient(to bottom right, rgb(248, 247, 227), rgb(251, 255, 230), rgb(241, 236, 214));
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -16,9 +21,14 @@ body {
     margin: 0;
 }
 
+header nav {
+    background: linear-gradient(to right, $base-color, rgb(250, 253, 222), $base-color);
+}
+
 input[type='number'] {
-    -moz-appearance: textfield;
     /*For FireFox*/
+    appearance: textfield;
+    -moz-appearance: textfield;
 
     &::-webkit-inner-spin-button {
         /*For Webkits like Chrome and Safari*/
@@ -65,20 +75,44 @@ main {
 }
 
 @include headings {
-    font-family: 'Montserrat';
+    font-family: "Montserrat";
 }
 
-$header-logo-size: 64px;
+
+.bg-hero {
+    padding-top: 75px;
+}
+
+.text-hero * {
+    font-family: "Lexend";
+    color: #28282B;
+}
+
+.text-hero .main-hero {
+    font-weight: bold;
+    padding-bottom: 30px;
+}
+
+.text-hero .lead-hero {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.app-name {
+    font-family: "Lexend";
+    color: #fad542;
+    font-weight: 600;
+}
+
+.app-name-emphasis {
+    color: #FEEB9C;
+    font-weight: 800;
+    text-shadow: 4px 2px #837b0d;
+}
 
 #header-logo {
     max-width: $header-logo-size;
     max-height: $header-logo-size;
-}
-
-.register-block,
-.login-block {
-    margin-top: 64px;
-    background-color: $secondary-color;
 }
 
 .cke_editable {
@@ -90,25 +124,23 @@ $header-logo-size: 64px;
 }
 
 #book-div {
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     background-color: $secondary-color;
 }
 
 #comment-section {
-    margin-top: 50px;
+    margin-top: 1.75rem;
 }
-
 
 
 #advanced-search .form-control {
     margin-bottom: 12px;
 }
 
-
 .container {
     width: 80%;
     // margin-top: 20px;
 }
-
 
 .sidebar {
     width: 25%;
@@ -135,29 +167,24 @@ $header-logo-size: 64px;
 .navbar {
     width: 100%;
     background-color: #f8f9fa;
-    padding: 15px 20px;
+    // padding: 15px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    border-bottom: 2px;
+    // box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-brand {
-    font-size: 1.7rem;
-    font-weight: bold;
-    color: #333;
+    margin-right: 3.4rem;
+
+    &:hover {
+        transform: scale(1.02);
+    }
 }
 
-.navbar-nav .nav-link {
-    color: #333;
-    font-size: 1.1rem;
-    margin: 0 12px;
-    position: relative;
-    text-transform: uppercase;
-}
-
-.navbar-nav .nav-link:hover {
-    color: #cac7c7;
+.navbar .nav-link {
+    color: #474d12;
 }
 
 .search-container {
@@ -236,6 +263,25 @@ $header-logo-size: 64px;
 
 
 @media (min-width: 993px) {
+    $book-thumb-width: 250px;
+    $book-thumb-height: $book-thumb-width * 1.6;
+
+    .book-thumb,
+    .card-book-thumb {
+        height: $book-thumb-height;
+        max-width: $book-thumb-width;
+        width: $book-thumb-width;
+        max-height: $book-thumb-height;
+    }
+
+    .result-card-body {
+        max-height: $book-thumb-height;
+        height: $book-thumb-height;
+    }
+}
+
+
+@media (max-width: 992px) and (min-width: 0px) {
     $book-thumb-width: 200px;
     $book-thumb-height: $book-thumb-width * 1.6;
 
@@ -250,24 +296,7 @@ $header-logo-size: 64px;
     .result-card-body {
         max-height: $book-thumb-height;
         height: $book-thumb-height;
-    }
-}
-
-@media (max-width: 992px) and (min-width: 0px) {
-    $book-thumb-width: 150px;
-    $book-thumb-height: $book-thumb-width * 1.6;
-
-    .book-thumb,
-    .card-book-thumb {
-        height: $book-thumb-height;
-        max-width: $book-thumb-width;
-        width: $book-thumb-width;
-        max-height: $book-thumb-height;
-    }
-
-    .result-card-body {
-        max-height: $book-thumb-height;
-        height: $book-thumb-height;
+        padding-left: 32px;
     }
 
     .card-custom {
@@ -276,12 +305,60 @@ $header-logo-size: 64px;
     }
 }
 
-.book-info>p {
-    margin-bottom: 20px;
+.book-title {
+    font-family: "Lexend";
+    margin: 0px;
 }
 
-.book-title {
-    margin-bottom: 20px
+.book-card-title {
+    color: #707091;
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.book-page-title {
+    font-size: 3.4rem;
+    padding-top: 8px;
+    font-weight: 400;
+}
+
+img.book-thumb-front,
+img.book-thumb-back {
+    position: absolute;
+}
+
+.book-thumb-front {
+    z-index: 2;
+}
+
+.book-thumb-back {
+    z-index: 1;
+}
+
+.book-thumb-front {
+    object-fit: cover;
+    padding: 16px;
+
+}
+
+.book-thumb-back {
+    filter: blur(5px);
+    zoom: 128%;
+}
+
+.result-card-body {
+    padding-top: 32px;
+    padding-left: 25px;
+}
+
+.card-body-col {
+    z-index: 3;
+    background-image: linear-gradient(to top, rgb(253, 248, 211), $base-color);
+}
+
+.book-info>p {
+    margin-bottom: 20px;
 }
 
 button.comment-action {
@@ -294,4 +371,30 @@ button.comment-action {
 p.comment-username {
     margin-top: 1rem;
     margin-left: 1rem;
+}
+
+.book-title {
+    letter-spacing: 0rem;
+}
+
+.auth-container,
+.styled-container {
+    margin-top: 64px;
+    background-color: $secondary-color;
+    background: linear-gradient(to bottom right, rgb(252, 251, 232), rgb(251, 255, 230), rgb(255, 251, 230));
+}
+
+.auth-container .form-control-label {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.auth-login-container,
+.auth-forgot-password-container {
+    width: 344px;
+}
+
+
+.auth-signup-container {
+    width: 400px;
 }

@@ -2,6 +2,7 @@ from datetime import datetime
 
 from flask import flash, redirect, render_template, request, session, url_for
 from flask_login import (
+    current_user,
     login_required,
     login_user,
     logout_user,
@@ -9,7 +10,7 @@ from flask_login import (
 
 from app import db, ph
 from app.auth import bp
-from app.auth.forms import LoginForm, SignupForm
+from app.auth.forms import ForgotPasswordForm, LoginForm, SignupForm
 from app.models import User
 
 
@@ -20,7 +21,8 @@ def signup():
     if form.validate_on_submit():
         username = request.form.get("username")
         email = request.form.get("email")
-        password_hash = ph.hash(request.form.get("password"))
+        password_plaintext = request.form.get("password")
+        password_hash = ph.hash(password_plaintext)
         date_created = datetime.now()
 
         flash(
@@ -32,7 +34,6 @@ def signup():
             username=username,
             email=email,
             password_hash=password_hash,
-            date_created=date_created.isoformat(),
         )
 
         db.session.add(user)
@@ -48,7 +49,11 @@ def signup():
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("main.index"))
+
     form = LoginForm()
+
     if form.validate_on_submit():
         username = request.form.get("username")
         password = request.form.get("password")
@@ -67,7 +72,26 @@ def login():
     return render_template("auth/login.html", form=form)
 
 
+@bp.route("/forgot_password", methods=["GET", "POST"])
+def forgot_password():
+    form = ForgotPasswordForm()
+
+    if form.validate_on_submit():
+        email = request.form.get("email")
+        user = User.query.filter_by(email=email).first()
+        if user:
+            new_password = request.form.get("new_password")
+            current_user.set_password(new_password)
+            db.session.commit()
+            render_template("auth/reset_successful.html")
+        else:
+            print("Incorrect email.")
+
+    return render_template("auth/forgot_password.html", form=form)
+
+
 @bp.route("/logout")
+@login_required
 def logout():
     logout_user()
     flash("Logged out successfully.")
