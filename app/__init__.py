@@ -22,8 +22,6 @@ def create_app(config_class=Config):
         app.wsgi_app, {"app": ("static/sass", "static/css", "/static/css")}
     )
 
-    print("\nHERE!!!\n" + app.config["SQLALCHEMY_DATABASE_URI"])
-
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)

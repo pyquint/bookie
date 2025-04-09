@@ -8,6 +8,7 @@ Developed in Python and Flask, using SQLite as the database.
 2. View **book information**, **descriptions**, **ratings**, and more.
 
 # Todo
+- [ ] Sanitize dataset (inconsistent date format, duplicate entries, etc.)
 - [x] Add advanced search filtering (multiple search criterias, filter by genre or rating, etc.).
 - [x] Add flexible sorting of search results, e.g. by rating, publication date, alphabetical, etc.
   - [ ] Sort by ascending or descending order.

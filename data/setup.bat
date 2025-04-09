@@ -28,7 +28,6 @@ if not exist %database_path% (
     sqlite3 %database_name% ""
     echo %database_name% created.& echo.
     pause
-    exit /b 1
 )
 echo %database_name% exists.& echo.
 
@@ -40,15 +39,14 @@ echo Creating `books` table...
 sqlite3 %db_file% < %script_dir%setup.sql
 echo Done creating `books` table.& echo.
 
-echo Books the database...
-sqlite3 %db_file% ".mode csv" ".import %dataset_path% books"
-echo Done importing %dataset_name%.& echo.
-
 echo Syncing database with Flask-Migrate...
 echo flask db upgrade.& echo.
 flask db upgrade
 echo Done.& echo.
 
+echo Importing into the database...
+sqlite3 %db_file% ".mode csv" ".import %dataset_path% books"
+echo Done importing %dataset_name%.& echo.
 
 echo Database setup + sync completed successfully.
 pause
