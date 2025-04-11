@@ -1,13 +1,13 @@
 $(function () {
     // for setting the requests arg by the selected type
     function setSearchTypeArg() {
-        const type = $("#search-type").find(":selected").text();
+        const type = $("#search-type-dropdown").find(":selected").text();
         $("#search-bar").attr("name", type.toLowerCase());
     }
 
     setSearchTypeArg();
 
-    $("#search-type").change(function () {
+    $("#search-type-dropdown").change(function () {
         setSearchTypeArg();
     });
 

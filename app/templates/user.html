@@ -6,6 +6,23 @@
 
 {% block content %}
     <div class="container">
-        <h1>Hello, {{ user.username }}</h1>
+        <div class="border p-4 m-4">
+            <img class="profile-picture"
+                 src="{{ url_for('static', filename=user.pp) }}"
+                 alt="{{ user.pp }}"
+                 width="75"
+                 height="75" />
+            <h1>Hello, {{ user.username }}</h1>
+        </div>
+
+        <div class="border p-4 m-4">
+            <form method="post" action="{{ url_for('main.update_pp') }}" enctype="multipart/form-data">
+                <label for="update-pp" class="form-label">Change profile picture:</label>
+                <div class="input-group">
+                    <input type="file" name="file"  class="form-control" id="update-pp" accept="image/*" requred />
+                    <button type="submit" class="btn btn-light border">Upload image</button>
+                </div>
+            </form>
+        </div>
     </div>
 {% endblock content %}

@@ -59,9 +59,7 @@ class User(db.Model, UserMixin):
     date_created: Mapped[datetime] = mapped_column(
         index=True, default=lambda: datetime.now(timezone.utc)
     )
-    pp: Mapped[str] = mapped_column(
-        sa.String(256), default="static/uploads/pp/book.png"
-    )
+    pp: Mapped[str] = mapped_column(sa.String(256), default="uploads/pp/book.png")
 
     comments: WriteOnlyMapped["Comment"] = relationship(back_populates="user")
 
@@ -80,6 +78,9 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f"<[ID: {self.id}] User {self.username}>"
+
+    def change_pp(self, filepath):
+        self.pp = filepath
 
 
 class Comment(db.Model):

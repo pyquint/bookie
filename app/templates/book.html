@@ -47,7 +47,11 @@
                 <hr />
                 <div class="row">
                     <div class="col-md-4">
-                        <img class="img-fluid w-100 border rounded-2" src="{{ book.cover_img }}" alt="[no cover image avaiable]" />
+                        {% if book.cover_img %}
+                            <img class="img-fluid w-100 border rounded-2" src="{{ book.cover_img }}" alt="book cover" />
+                        {% else %}
+                            <p>(no cover image avaiable)</p>
+                        {% endif %}
                     </div>
 
                     <div class="col-md-8">
@@ -63,7 +67,12 @@
                         <h2>
                             <strong>Description:</strong>
                         </h2>
-                        <p class="book-desc me-4">{{ book.description }}</p>
+
+                        {% if book.description %}
+                            <p class="book-desc me-4">{{ book.description }}</p>
+                        {% else %}
+                            <p>No book description available.</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -76,12 +85,19 @@
                     <div class="card mb-2">
                         <div class="row">
                             <div class="col-sm-2 d-flex flex-column ps-4 border-end border-light-subtle">
-                                <p class="comment-username fw-bold">{{ comment.user.username }}</p>
+                                <div class="comment-author-container">
+                                    <img src="{{ url_for('static', filename=comment.user.pp) }}"
+                                         alt="{{ comment.user.username }} pp"
+                                         class="profile-picture" />
+                                    <p class="comment-author-username fw-bold">{{ comment.user.username }}</p>
+                                </div>
                                 <div>
-                                    <button class="btn btn-link comment-action"
-                                            onclick="quoteComment({{ comment.id }}, '{{ comment.user.username }}')">
-                                        Quote
-                                    </button>
+                                    {% if current_user.is_authenticated %}
+                                        <button class="btn btn-link comment-action"
+                                                onclick="quoteComment({{ comment.id }}, '{{ comment.user.username }}')">
+                                            Quote
+                                        </button>
+                                    {% endif %}
                                     {% if comment.user.username == current_user.username %}
                                         <button class="btn btn-link comment-action">
                                             <a href="{{ url_for('main.delete_comment', book_id=book.book_id, comment_id=comment.id) }}">Delete</a>
@@ -91,7 +107,7 @@
                             </div>
                             <div class="col-sm-10">
                                 <div class="card-body ">
-                                    <p class="card-title text-muted text-small mb-3"
+                                    <p class="card-title text-muted text-small mb-4"
                                        title="{{ comment.date_created_fmt('%a %b %d %Y %I:%M:%S %p %Z %z') }}">
                                         {{ comment.date_created_fmt("%B %d, %Y") }}
                                     </p>

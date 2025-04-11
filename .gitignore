@@ -283,3 +283,4 @@ fabric.properties
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,flask,pycharm+all,sass
 
 bookie.db
+app/static/uploads

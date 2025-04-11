@@ -26,3 +26,8 @@ class Config:
     # REDIS_URL = os.environ.get("REDIS_URL") or "redis://"
     RESULTS_PER_LINE = 2
     RESULTS_PER_PAGE = 5
+    # UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER") or os.path.join(
+    #     basedir, "app", "uploads"
+    # )
+    UPLOAD_FOLDER = "uploads"
+    UPLOAD_FOLDER_PATH = "/uploads"

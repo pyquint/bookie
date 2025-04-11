@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="h-100" lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -29,7 +29,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
     </head>
 
-    <body>
+    <body class="d-flex flex-column min-vh-100">
         <header id="header-template">
             <nav class="navbar navbar-expand-md navbar-light border-bottom">
                 <div class="container-lg d-flex flex-wrap justify-content-center justify-content-lg-start align-items-center">
@@ -43,7 +43,8 @@
                     </a>
 
                     <ul class="nav col-12 col-lg-auto me-lg-auto justify-content-center mb-lg-0 align-items-center text-decoration-none nav-links">
-                        <a href="{{ url_for('main.search', all='true', page=' ') }}" class="nav-link px-2">Book Catalogue</a>
+                        <a href="{{ url_for('main.search', all='true', page='1', sort='num_ratings', order='desc') }}"
+                           class="nav-link px-2">Book Catalogue</a>
                         <a href="#" class="nav-link px-2">My Books</a>
                         <a href="{{ url_for('main.advanced_search') }}" class="nav-link px-2">Advanced Search</a>
                     </ul>
@@ -54,7 +55,7 @@
                           id="simple-search"
                           class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
                         <div class="container-sm input-group align-middle">
-                            <select class="form-select dropdown-toggle col- w-25" id="search-type">
+                            <select class="form-select dropdown-toggle w-25" id="search-type-dropdown">
                                 <option value="Title">Title</option>
                                 <option value="Author">Author</option>
                                 <option value="ISBN">ISBN</option>
@@ -66,7 +67,15 @@
                                    class="form-control col-8 w-50"
                                    id="search-bar"
                                    name="query"
-                                   placeholder="Search for books..." />
+                                   placeholder="Search for books..."
+                                   list="search-suggestions" />
+                            <datalist id="search-suggestions">
+                                <option value="Black"></option>
+                                <option value="Red"></option>
+                                <option value="Green"></option>
+                                <option value="Blue"></option>
+                                <option value="White"></option>
+                            </datalist>
                             <button class="btn btn-warning rounded-end" type="submit">
                                 <svg xmlns="http://www.w3.org/2000/svg"
                                      width="16"
@@ -99,7 +108,7 @@
                                 <a class="d-block link-body-emphasis dropdown-toggle text-decoration-none"
                                    data-bs-toggle="dropdown"
                                    aria-expanded="false">
-                                    <img class="rounded-circle"
+                                    <img class="rounded-circle profile-picture"
                                          src="{{ url_for('static', filename=current_user.pp) }}"
                                          alt="pp"
                                          width="32"
@@ -138,9 +147,9 @@
             {% endblock content %}
         </main>
 
-        <footer>
-            <div class="container mt-4">
-                <p class="text-center mt-4">© 2025 quint</p>
+        <footer class="footer mt-auto">
+            <div class="container p-4">
+                <p class="text-center">© 2025 quint</p>
             </div>
         </footer>
 

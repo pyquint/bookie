@@ -1,8 +1,9 @@
 import json
+import os
 
 import markdown
 import sqlalchemy as sa
-from flask import redirect, render_template, request, url_for
+from flask import current_app, redirect, render_template, request, url_for
 from flask_login import (
     current_user,
     login_required,
@@ -23,7 +24,7 @@ def index():
 @bp.route("/search", methods=["GET"])
 def search():
     query = sa.select(Book)
-    all = request.args.get("all", "true")
+    all = request.args.get("all", "false")
 
     if all == "false":
         for column in Book.__table__.columns:
@@ -141,3 +142,46 @@ def user(username):
 @login_required
 def settings():
     return render_template("auth/settings.html")
+
+
+@bp.route("/update_pp", methods=["GET", "POST"])
+@login_required
+def update_pp():
+    if request.method == "POST":
+        if "file" not in request.files:
+            print("pp not in request... ", request.files)
+            return redirect(request.referrer)
+
+        file = request.files["file"]
+
+        # open(os.path.join(current_app.config["UPLOAD_FOLDER"], "pp"))
+
+        if file.filename == "":
+            print("filename is empty... ", request.files)
+            return redirect(request.referrer)
+
+        if file:
+            # os.path.join's backslash delimiter turns into
+            # %5C (special HTML character code for backslash)
+            # when treated as a path, e.g url_for('static', filename=filename)
+
+            # forward slashes do not have this issue on my machinem here using f-strings
+            # but I worry it might pose incompatibility with other file systems
+
+            # file_path = f"{current_app.config["UPLOAD_FOLDER"]}/pp/{file.filename}"
+
+            # replacing \ with / works, but I have no idea on different file systems
+            # probably still has the same incompatibility issues
+
+            file_path = os.path.join(
+                current_app.config["UPLOAD_FOLDER"], "pp", file.filename
+            ).replace("\\", "/")
+            save_path = os.path.join(current_app.static_folder, file_path)
+
+            # file_path = f"{current_app.config["UPLOAD_FOLDER"]}/pp/{file.filename}"
+
+            current_user.change_pp(file_path)
+            file.save(save_path)
+            db.session.commit()
+
+        return redirect(url_for("main.user", username=current_user.username))

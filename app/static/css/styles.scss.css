@@ -2,15 +2,14 @@ a {
   color: #0d58c9; }
 
 body {
-  font-family: 'Inter';
-  background: linear-gradient(to bottom right, #f8f7e3, #fbffe6, #f1ecd6);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  margin: 0; }
+  font-family: 'Inter'; }
+
+body,
+main {
+  background: linear-gradient(to bottom right, #f8f7e3, #fbffe6, #f1ecd6); }
+
+footer p {
+  margin: 0px; }
 
 header nav {
   background: linear-gradient(to right, Ivory, #fafdde, Ivory); }
@@ -31,9 +30,6 @@ button:focus {
   outline: none;
   outline-width: 0px; }
 
-footer {
-  min-height: 50px; }
-
 main {
   flex: 1; }
 
@@ -50,6 +46,9 @@ h4,
 h5,
 h6 {
   font-family: "Montserrat"; }
+
+#search-type-dropdown option {
+  color: #1d1f06; }
 
 .bg-hero {
   padding-top: 75px; }
@@ -133,6 +132,10 @@ h6 {
 
 .navbar .nav-links .nav-link {
   color: #474d12; }
+  .navbar .nav-links .nav-link:hover {
+    color: #fad542;
+    font-weight: bold;
+    text-decoration: underline; }
 
 .search-container {
   max-width: 550px; }
@@ -217,6 +220,9 @@ h6 {
     max-width: 1000px;
     margin-bottom: 10px; } }
 
+svg.bi-search {
+  fill: white; }
+
 .book-title {
   font-family: "Lexend";
   margin: 0px; }
@@ -224,7 +230,6 @@ h6 {
 .book-card-title {
   color: #707091;
   font-size: 1.75rem;
-  margin-bottom: 1.5rem;
   font-weight: 500; }
 
 .book-page-title {
@@ -251,8 +256,7 @@ img.book-thumb-back {
   zoom: 128%; }
 
 .result-card-body {
-  padding-top: 32px;
-  padding-left: 25px; }
+  padding: 25px; }
 
 .card-body-col {
   z-index: 3;
@@ -261,15 +265,30 @@ img.book-thumb-back {
 .book-info > p {
   margin-bottom: 20px; }
 
-button.comment-action {
-  margin-top: 0px;
+button.comment-action,
+button.comment-action a {
+  color: #0d58c9;
   margin: 0px;
   padding-top: 0px;
-  padding-bottom: 1.5rem !important; }
+  padding-right: 0px;
+  padding-bottom: 1rem;
+  font-size: 14px;
+  text-decoration: none; }
+  button.comment-action:hover,
+  button.comment-action a:hover {
+    text-decoration: underline; }
 
-p.comment-username {
+.comment-author-container {
   margin-top: 1rem;
   margin-left: 1rem; }
+
+#comment-section .profile-picture {
+  width: 100px;
+  height: 100px; }
+
+.comment-author-container p {
+  margin-top: 0.1rem;
+  margin-bottom: 0.2rem; }
 
 .book-title {
   letter-spacing: 0rem; }
@@ -290,5 +309,8 @@ p.comment-username {
 
 .auth-signup-container {
   width: 400px; }
+
+.profile-picture {
+  object-fit: cover; }
 
 /*# sourceMappingURL=styles.scss.css.map */
