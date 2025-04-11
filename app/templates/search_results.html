@@ -16,7 +16,7 @@
                     <input type="hidden" name="author" value="{{ args.author }}" />
                     <input type="hidden" name="isbn" value="{{ args.isbn }}" />
                     <input type="hidden" name="publisher" value="{{ args.publisher }}" />
-                    <input type="hidden" name="sort" value="{{ args.sort }}" />
+                    <input type="hidden" name="sort" id="sort" value="{{ args.sort }}" />
                     <input type="hidden" name="order" id="order" value="{{ args.order }}" />
 
                     <input type="hidden" name="page" value="1" />
@@ -24,7 +24,7 @@
                     <label for="sort">Sort by:</label>
                     <div class="row g-2">
                         <div class="col">
-                            <select name="sort" class="form-select" id="sortby" onchange="this.form.submit()">
+                            <select name="sort" class="form-select" id="sortby">
                                 <option value="title" {% if args.sort=='title' %}selected{% endif %}>Title</option>
                                 <option value="pages" {% if args.sort=='pages' %}selected{% endif %}>Pages</option>
                                 <option value="num_ratings" {% if args.sort=='num_ratings' %}selected{% endif %}>Ratings</option>

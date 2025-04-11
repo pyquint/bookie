@@ -1,5 +1,5 @@
 $(function () {
-    // for setting the requests arg by the selected type
+    // for setting 2e requests arg by the selected type
     function setSearchTypeArg() {
         const type = $("#search-type-dropdown").find(":selected").text();
         $("#search-bar").attr("name", type.toLowerCase());
@@ -34,4 +34,14 @@ $(function () {
             $("#sort-results").submit();
         }
     });
+
+    $("#sortby").on({
+        "change": function () {
+            sortby = $("#sortby option:selected").val();
+            $("#sort").val(sortby);
+            $("#sort-results").submit();
+        }
+    });
 });
+
+

@@ -278,6 +278,12 @@ button.comment-action a {
   button.comment-action a:hover {
     text-decoration: underline; }
 
+.hyperlink-on-hover {
+  text-decoration: none; }
+  .hyperlink-on-hover:hover {
+    text-decoration: underline;
+    text-decoration-color: #0d58c9; }
+
 .comment-author-container {
   margin-top: 1rem;
   margin-left: 1rem; }

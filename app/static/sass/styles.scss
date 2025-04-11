@@ -384,6 +384,15 @@ button.comment-action a {
     }
 }
 
+.hyperlink-on-hover {
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+        text-decoration-color: $hyperlink-color;
+    }
+}
+
 .comment-author-container {
     margin-top: 1rem;
     margin-left: 1rem;
