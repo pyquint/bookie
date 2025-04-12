@@ -85,7 +85,7 @@ class User(db.Model, UserMixin):
 
     def get_book_status(self, book_id):
         query = sa.select(BookStatus).where(BookStatus.book_id == book_id)
-        status = db.session.scalars(query).first()
+        status = db.session.scalar(query)
         return status
 
     def __repr__(self):

@@ -3,7 +3,7 @@ import os
 
 import markdown
 import sqlalchemy as sa
-from flask import current_app, redirect, render_template, request, url_for
+from flask import current_app, jsonify, redirect, render_template, request, url_for
 from flask_login import (
     current_user,
     login_required,
@@ -13,7 +13,6 @@ from sqlalchemy import desc
 from app import db
 from app.main import bp
 from app.models import Book, BookStatus, Comment, User
-from bookie import ReadingStatus
 
 
 @bp.route("/", methods=["GET", "POST"])
@@ -133,7 +132,7 @@ def get_comment():
     comment_id = request.args.get("comment_id", "")
 
     query = sa.select(Comment).filter_by(id=comment_id)
-    comment = db.session.scalars(query).first()
+    comment = db.session.scalar(query)
 
     comment_dict = comment.__dict__
     comment_dict.pop("_sa_instance_state")
@@ -153,7 +152,7 @@ def delete_comment(book_id, comment_id):
 @bp.route("/user/<username>")
 def user(username):
     query = sa.select(User).where(User.username == username)
-    user = db.session.scalars(query).first()
+    user = db.session.scalar(query)
 
     return render_template("user.html", user=user)
 
@@ -206,10 +205,7 @@ def update_pp():
 @bp.post("/update_status")
 @login_required
 def update_status():
-    print("\n", request.form, "\n")
-
     status_id = request.form.get("status_id", type=int)
-    # reading_status = db.session.get(ReadingStatus, status_id)
 
     book_id = request.form.get("book_id")
     book = db.session.get(Book, book_id)
@@ -217,7 +213,7 @@ def update_status():
     finished_chapters = request.form.get("finished_chapters", type=int)
 
     query = sa.select(BookStatus).filter_by(book=book, user=current_user)
-    book_status = db.session.scalars(query).first()
+    book_status = db.session.scalar(query)
 
     if book_status:
         book_status.finished_chapters = (
@@ -237,3 +233,27 @@ def update_status():
     print("\nsuccessful:", book_status, "\n")
 
     return redirect(request.referrer)
+
+
+@bp.route("/api/search")
+def api_search():
+    type = request.args.get("type", "title")
+    query_string = request.args.get("query", "")
+    query = sa.select(Book).filter(getattr(Book, type).like(f"%{query_string}%"))
+    results = db.session.scalars(query)
+
+    response = {
+        "result": [
+            {
+                "id": book.id,
+                "title": book.title,
+                "author": book.author,
+                "description": book.description,
+                "publisher": book.publisher,
+                "ISBN": book.isbn,
+            }
+            for book in results
+        ]
+    }
+
+    return jsonify(response)

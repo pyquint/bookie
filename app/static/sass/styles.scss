@@ -76,6 +76,36 @@ main {
     color: #1d1f06;
 }
 
+#search-bar-container {
+    position: relative
+}
+
+#search-bar:focus {
+    outline: none;
+    outline-color: transparent;
+}
+
+.suggestions {
+    display: none;
+    position: absolute;
+    top: 100%;
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    background-color: white;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 5;
+}
+
+.suggestion-item {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.suggestion-item:hover {
+    background-color: $base-color;
+}
+
 .bg-hero {
     padding-top: 75px;
 }
@@ -434,4 +464,8 @@ button.comment-action a {
 
 .profile-picture {
     object-fit: cover;
+}
+
+#loading-icon {
+    width: 25%;
 }

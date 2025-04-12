@@ -81,7 +81,7 @@ def forgot_password():
     if form.validate_on_submit():
         email = request.form.get("email")
         query = sa.select(User).filter_by(email=email)
-        user = db.session.scalars(query).first()
+        user = db.session.scalar(query)
 
         if user:
             new_password = request.form.get("new_password")

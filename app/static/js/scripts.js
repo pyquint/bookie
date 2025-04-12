@@ -17,13 +17,13 @@ $(function () {
 
     // Bootstrap tooltip
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new window.bootstrap.Tooltip(tooltipTriggerEl));
 });
 
 $(function () {
     $("#order-btn").on({
         "click": function () {
-            order = $("#order").val();
+            const order = $("#order").val();
             if (order == "asc") {
                 $("#order").val("desc");
                 // console.log("changed to 'desc'");
@@ -37,7 +37,7 @@ $(function () {
 
     $("#sortby").on({
         "change": function () {
-            sortby = $("#sortby option:selected").val();
+            const sortby = $("#sortby option:selected").val();
             $("#sort").val(sortby);
             $("#sort-results").submit();
         }
