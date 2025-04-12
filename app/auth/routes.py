@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import sqlalchemy as sa
 from flask import flash, redirect, render_template, request, session, url_for
 from flask_login import (
     current_user,
@@ -58,7 +59,8 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
 
-        user = User.query.filter_by(username=username).first()
+        query = sa.select(User).filter_by(username=username)
+        user = db.session.scalars(query).first()
 
         if user and user.check_password(password):
             login_user(user, remember=request.form.get("remember_me"))
@@ -78,7 +80,9 @@ def forgot_password():
 
     if form.validate_on_submit():
         email = request.form.get("email")
-        user = User.query.filter_by(email=email).first()
+        query = sa.select(User).filter_by(email=email)
+        user = db.session.scalars(query).first()
+
         if user:
             new_password = request.form.get("new_password")
             current_user.set_password(new_password)

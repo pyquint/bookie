@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS books (
-    book_id TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY,
     title TEXT,
     series TEXT,
     author TEXT,

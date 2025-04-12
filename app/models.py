@@ -17,7 +17,7 @@ def load_user(uid):
 class Book(db.Model):
     __tablename__ = "books"
 
-    book_id: Mapped[str] = mapped_column(primary_key=True, unique=True)
+    id: Mapped[str] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(index=True)
     series: Mapped[Optional[str]] = mapped_column()
     author: Mapped[str] = mapped_column(index=True)
@@ -25,7 +25,7 @@ class Book(db.Model):
     description: Mapped[Optional[str]] = mapped_column()
     language: Mapped[str] = mapped_column()
     isbn: Mapped[str] = mapped_column()
-    genres: Mapped[str] = mapped_column()
+    genres: Mapped[str] = mapped_column(index=True)
     characters: Mapped[str] = mapped_column()
     book_format: Mapped[Optional[str]] = mapped_column()
     edition: Mapped[Optional[str]] = mapped_column()
@@ -44,6 +44,9 @@ class Book(db.Model):
     price: Mapped[Optional[float]] = mapped_column(sa.Float)
 
     # comments: WriteOnlyMapped["Comment"] = relationship(back_populates="book")
+    book_statuses: Mapped[list["BookStatus"]] = relationship(
+        "BookStatus", back_populates="book"
+    )
 
     def __repr__(self):
         return f"<Book {self.title} by {self.author}>"
@@ -55,13 +58,14 @@ class User(db.Model, UserMixin):
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(sa.String(64), index=True, unique=True)
     email: Mapped[str] = mapped_column(sa.String(128), index=True, unique=True)
-    password_hash: Mapped[str] = mapped_column(sa.String(256))
+    password_hash: Mapped[Optional[str]] = mapped_column(sa.String(256))
     date_created: Mapped[datetime] = mapped_column(
         index=True, default=lambda: datetime.now(timezone.utc)
     )
     pp: Mapped[str] = mapped_column(sa.String(256), default="uploads/pp/book.png")
 
     comments: WriteOnlyMapped["Comment"] = relationship(back_populates="user")
+    book_statuses: Mapped[list["BookStatus"]] = relationship(back_populates="user")
 
     def get_id(self):
         return self.id
@@ -76,11 +80,16 @@ class User(db.Model, UserMixin):
         except VerifyMismatchError:
             return False
 
-    def __repr__(self):
-        return f"<[ID: {self.id}] User {self.username}>"
-
     def change_pp(self, filepath):
         self.pp = filepath
+
+    def get_book_status(self, book_id):
+        query = sa.select(BookStatus).where(BookStatus.book_id == book_id)
+        status = db.session.scalars(query).first()
+        return status
+
+    def __repr__(self):
+        return f"<[ID: {self.id}] User {self.username}>"
 
 
 class Comment(db.Model):
@@ -93,7 +102,7 @@ class Comment(db.Model):
     )
 
     # book: Mapped[Book] = relationship(back_populates="comments")
-    book_id: Mapped[str] = mapped_column(db.ForeignKey(Book.book_id))
+    book_id: Mapped[str] = mapped_column(db.ForeignKey(Book.id))
 
     user: Mapped[User] = relationship(back_populates="comments")
     user_id: Mapped[int] = mapped_column(db.ForeignKey(User.id), index=True)
@@ -103,3 +112,32 @@ class Comment(db.Model):
 
     def date_created_fmt(self, fmt):
         return self.date_created.strftime(fmt)
+
+
+class ReadingStatus(db.Model):
+    __tablename__ = "reading_statuses"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(sa.String(128), unique=True)
+    book_statuses: Mapped[list["BookStatus"]] = relationship(back_populates="status")
+
+    def __repr__(self):
+        return f"<Reading Status '{self.name}'>"
+
+
+class BookStatus(db.Model):
+    __tablename__ = "book_statuses"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(db.ForeignKey(User.id))
+    book_id: Mapped[int] = mapped_column(db.ForeignKey(Book.id))
+    reading_status_id: Mapped[int] = mapped_column(db.ForeignKey(ReadingStatus.id))
+
+    finished_chapters: Mapped[int] = mapped_column(default=0)
+
+    status: Mapped[ReadingStatus] = relationship(back_populates="book_statuses")
+    user: Mapped[User] = relationship(back_populates="book_statuses")
+    book: Mapped[Book] = relationship(back_populates="book_statuses")
+
+    def __repr__(self):
+        return f"<{self.id}, {self.book}, {self.user}, {self.status}, {self.finished_chapters}>"

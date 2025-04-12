@@ -45,8 +45,14 @@ flask db upgrade
 echo Done.& echo.
 
 echo Importing into the database...
-sqlite3 %db_file% ".mode csv" ".import %dataset_path% books"
+@REM add --skip 1 to exclude the first row, if the table already exists
+sqlite3 %db_file% ".import %dataset_path% books --csv --skip 1"
 echo Done importing %dataset_name%.& echo.
+
+echo Populating 'reading_statuses' table...
+@REM add --skip 1 to exclude the first row, if the table already exists
+sqlite3 %db_file% < %script_dir%\reading_statuses.sql
+echo Done!& echo.
 
 echo Database setup + sync completed successfully.
 pause

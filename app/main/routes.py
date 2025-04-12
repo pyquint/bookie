@@ -12,7 +12,8 @@ from sqlalchemy import desc
 
 from app import db
 from app.main import bp
-from app.models import Book, Comment, User
+from app.models import Book, BookStatus, Comment, User
+from bookie import ReadingStatus
 
 
 @bp.route("/", methods=["GET", "POST"])
@@ -78,10 +79,21 @@ def advanced_search():
 
 @bp.route("/book/<book_id>", methods=["GET"])
 def book(book_id):
-    book = Book.query.get(book_id)
+    book = db.session.get(Book, book_id)
+
     if book is None:
         return redirect("/")
-    comments = Comment.query.filter(Comment.book_id == book_id)
+
+    query = sa.select(Comment).filter(Comment.book_id == book_id)
+    comments = db.session.scalars(query)
+
+    if current_user.is_authenticated:
+        book_status = current_user.get_book_status(book_id)
+    else:
+        book_status = None
+
+    print("\ncurrent user status:", book_status, "\n")
+
     return render_template(
         "book.html",
         book=book,
@@ -91,6 +103,7 @@ def book(book_id):
             else url_for("main.index")
         ),
         comments=comments,
+        book_status=book_status,
     )
 
 
@@ -101,7 +114,6 @@ def post_comment(book_id):
 
     if comment:
         # date_created = datetime.now().isoformat()
-
         comment = Comment(
             book_id=book_id,
             user_id=current_user.id,
@@ -119,22 +131,30 @@ def post_comment(book_id):
 @bp.route("/get_comment")
 def get_comment():
     comment_id = request.args.get("comment_id", "")
-    comment = Comment.query.filter_by(id=comment_id).first()
+
+    query = sa.select(Comment).filter_by(id=comment_id)
+    comment = db.session.scalars(query).first()
+
     comment_dict = comment.__dict__
     comment_dict.pop("_sa_instance_state")
+
     return json.dumps(comment_dict, default=str)
 
 
 @bp.route("/book/<book_id>/delete_comment?<comment_id>")
 def delete_comment(book_id, comment_id):
-    Comment.query.filter_by(id=comment_id).delete()
+    comment = db.session.get(Comment, comment_id)
+    db.session.delete(comment)
     db.session.commit()
+
     return redirect(url_for("main.book", book_id=book_id))
 
 
 @bp.route("/user/<username>")
 def user(username):
-    user = User.query.filter(User.username == username).first()
+    query = sa.select(User).where(User.username == username)
+    user = db.session.scalars(query).first()
+
     return render_template("user.html", user=user)
 
 
@@ -153,8 +173,6 @@ def update_pp():
             return redirect(request.referrer)
 
         file = request.files["file"]
-
-        # open(os.path.join(current_app.config["UPLOAD_FOLDER"], "pp"))
 
         if file.filename == "":
             print("filename is empty... ", request.files)
@@ -178,10 +196,44 @@ def update_pp():
             ).replace("\\", "/")
             save_path = os.path.join(current_app.static_folder, file_path)
 
-            # file_path = f"{current_app.config["UPLOAD_FOLDER"]}/pp/{file.filename}"
-
             current_user.change_pp(file_path)
             file.save(save_path)
             db.session.commit()
 
         return redirect(url_for("main.user", username=current_user.username))
+
+
+@bp.post("/update_status")
+@login_required
+def update_status():
+    print("\n", request.form, "\n")
+
+    status_id = request.form.get("status_id", type=int)
+    # reading_status = db.session.get(ReadingStatus, status_id)
+
+    book_id = request.form.get("book_id")
+    book = db.session.get(Book, book_id)
+
+    finished_chapters = request.form.get("finished_chapters", type=int)
+
+    query = sa.select(BookStatus).filter_by(book=book, user=current_user)
+    book_status = db.session.scalars(query).first()
+
+    if book_status:
+        book_status.finished_chapters = (
+            finished_chapters or book_status.finished_chapters
+        )
+        book_status.reading_status_id = status_id
+    else:
+        book_status = BookStatus(
+            user=current_user,
+            reading_status_id=status_id,
+            book=book,
+            finished_chapters=finished_chapters,
+        )
+        db.session.add(book_status)
+
+    db.session.commit()
+    print("\nsuccessful:", book_status, "\n")
+
+    return redirect(request.referrer)

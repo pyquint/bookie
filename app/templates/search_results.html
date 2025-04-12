@@ -50,7 +50,7 @@
                     <div class="col-lg-6">
                         <div class="card card-custom">
                             <div class="col p-0 d-flex card-book-thumb">
-                                <a href="{{ url_for('main.book', book_id=book.book_id) }}" class="text-decoration-none">
+                                <a href="{{ url_for('main.book', book_id=book.id) }}" class="text-decoration-none">
                                     {% if book.cover_img %}
                                         <img src="{{ book.cover_img }}" class="book-thumb book-thumb-front" alt="book cover" />
                                         <img src="{{ book.cover_img }}" class="book-thumb book-thumb-back" alt="" />
@@ -62,7 +62,7 @@
                             <div class="col card-body-col result-card-body overflow-y-scroll">
                                 <div class="row">
                                     <h4 class="card-title book-title book-card-title hyperlink-on-hover">
-                                        <a href="{{ url_for('main.book', book_id=book.book_id) }}" class="text-decoration-none">{{ book.title }}</a>
+                                        <a href="{{ url_for('main.book', book_id=book.id) }}" class="text-decoration-none">{{ book.title }}</a>
                                     </h4>
                                 </div>
 

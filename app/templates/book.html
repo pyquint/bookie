@@ -44,7 +44,46 @@
 
             <div id="book-content">
                 <h1 class="book-title book-page-title">{{ book.title }}</h1>
+
                 <hr />
+
+                <div class="border border-2 p-4 mb-4 w-50" id="status-container">
+                    <form role="status" action="{{ url_for('main.update_status') }}" method="post" id="update-status">
+                        <input type="hidden" name="book_id" value="{{ book.id }}" />
+                        <label for="status-dropdown">Reading Status:</label>
+                        <select name="status_id" class="form-select dropdown-toggle" id="status-dropdown" autocomplete="off">
+                            <option value="1" {% if book_status.reading_status_id == 1 %}selected{% endif %}>
+                                Plan to Read
+                            </option>
+                            <option value="2" {% if book_status.reading_status_id == 2 %}selected{% endif %}>
+                                Currently Reading
+                            </option>
+                            <option value="3" {% if book_status.reading_status_id == 3 %}selected{% endif %}>Finished</option>
+                            <option value="4" {% if book_status.reading_status_id == 4 %}selected{% endif %}>Dropped</option>
+                        </select>
+
+                        <label for="finished-chapters">Chapter:</label>
+                        <input class="form-control"
+                               type="number"
+                               name="finished_chapters"
+                               id="finished-chapters"
+                               placeholder="{{ book_status.finished_chapters }}" />
+
+                        {# is tracking page no. necessary? #}
+                        {# <label for="page">Page:</label> #}
+                        {# <input class="form-control" type="number" name="page" id="page" /> #}
+
+                        {% if current_user.is_authenticated %}
+                            <button class="btn btn-warning mt-3" type="submit">Update</button>
+                        {% else %}
+                            <p>Log in to start tracking your progress!</p>
+                            <button class="btn btn-success">
+                                <a href="{{ url_for('auth.login', next=request.url) }}" class="nav-link">Login</a>
+                            </button>
+                        {% endif %}
+                    </form>
+                </div>
+
                 <div class="row">
                     <div class="col-md-4">
                         {% if book.cover_img %}
@@ -100,7 +139,7 @@
                                     {% endif %}
                                     {% if comment.user.username == current_user.username %}
                                         <button class="btn btn-link comment-action">
-                                            <a href="{{ url_for('main.delete_comment', book_id=book.book_id, comment_id=comment.id) }}">Delete</a>
+                                            <a href="{{ url_for('main.delete_comment', book_id=book.id, comment_id=comment.id) }}">Delete</a>
                                         </button>
                                     {% endif %}
                                 </div>
