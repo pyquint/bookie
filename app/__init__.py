@@ -32,7 +32,7 @@ def create_app(config_class=Config):
     app.wsgi_app = SassMiddleware(
         app.wsgi_app,
         {
-            "bookie": {
+            "app": {
                 "sass_path": "static/sass",
                 "css_path": "static/css",
                 "wsgi_path": "/static/css",
