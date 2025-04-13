@@ -32,7 +32,7 @@
     <body class="d-flex flex-column min-vh-100">
         <header id="header-template">
             <nav class="navbar navbar-expand-md navbar-light border-bottom">
-                <div class="container-lg mb-sm-2 d-flex flex-wrap justify-content-center justify-content-lg-start align-items-center">
+                <div class="container-lg d-flex flex-wrap justify-content-center justify-content-lg-start align-items-center">
                     <a class="navbar-brand d-flex align-items-center link-body-emphasis text-decoration-none"
                        href="{{ url_for('main.index') }}">
                         <img src="{{ url_for('static', filename='img/bookie-nobg.png') }}"
@@ -43,7 +43,7 @@
                     </a>
 
                     <ul class="nav col-12 col-lg-auto me-lg-auto justify-content-center mb-lg-0 align-items-center text-decoration-none nav-links">
-                        <a href="{{ url_for('main.search', all='true', page='1', sort='num_ratings', order='desc') }}"
+                        <a href="{{ url_for('main.search', all='true', sort='num_ratings', order='desc', page='1') }}"
                            class="nav-link px-2">Book Catalogue</a>
                         <a href="#" class="nav-link px-2">My Books</a>
                         <a href="{{ url_for('main.advanced_search') }}" class="nav-link px-2">Advanced Search</a>
@@ -55,7 +55,7 @@
                           id="simple-search"
                           autocomplete="off">
                         <div class="col-12 col-lg-auto me-lg-3">
-                            <div class="container-sm input-group align-middle" id="search-container">
+                            <div class="container-sm input-group align-middle p-2" id="search-container">
                                 <select class="form-select dropdown-toggle w-25" id="search-type-dropdown">
                                     <option value="title">Title</option>
                                     <option value="author">Author</option>
@@ -71,7 +71,9 @@
                                            name="query"
                                            placeholder="Search for books..." />
                                     <div id="suggestions-box" class="suggestions">
-                                        <img src="{{ url_for('static', filename='img/Loading_icon.gif') }}" id="loading-icon" alt="loading..." />
+                                        <img src="{{ url_for('static', filename='img/yt_loading_symbol_3.gif') }}"
+                                             id="loading-icon"
+                                             alt="loading..." />
                                     </div>
                                 </div>
                                 <button class="btn btn-warning rounded-end" type="submit">

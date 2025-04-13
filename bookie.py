@@ -2,7 +2,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as so
 
 from app import create_app, db
-from app.models import Book, BookStatus, Comment, ReadingStatus, User
+from app.models import Book, BookStatus, Comment, ReadingStatus, User, UserFavorite
 
 app = create_app()
 
@@ -17,5 +17,6 @@ def make_shell_context():
         "User": User,
         "Comment": Comment,
         "ReadingStatus": ReadingStatus,
-        "BookStatus": BookStatus
+        "BookStatus": BookStatus,
+        "UserFavorite": UserFavorite,
     }

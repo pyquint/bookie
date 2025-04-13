@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 import markdown
 import sqlalchemy as sa
@@ -8,15 +9,17 @@ from flask_login import (
     current_user,
     login_required,
 )
-from sqlalchemy import desc
+from sqlalchemy import desc, exc
 
 from app import db
 from app.main import bp
 from app.models import Book, BookStatus, Comment, User
+from bookie import UserFavorite
 
 
-@bp.route("/", methods=["GET", "POST"])
-@bp.route("/index", methods=["GET", "POST"])
+@bp.route("/")
+@bp.route("/index")
+@bp.route("/home")
 def index():
     return render_template("index.html")
 
@@ -91,7 +94,7 @@ def book(book_id):
     else:
         book_status = None
 
-    print("\ncurrent user status:", book_status, "\n")
+    print("\n", book_status, "\n")
 
     return render_template(
         "book.html",
@@ -125,19 +128,6 @@ def post_comment(book_id):
 
     # prevents resubmitting of comment when reloadign the page immedately after posting
     return redirect(url_for("main.book", book_id=book_id))
-
-
-@bp.route("/get_comment")
-def get_comment():
-    comment_id = request.args.get("comment_id", "")
-
-    query = sa.select(Comment).filter_by(id=comment_id)
-    comment = db.session.scalar(query)
-
-    comment_dict = comment.__dict__
-    comment_dict.pop("_sa_instance_state")
-
-    return json.dumps(comment_dict, default=str)
 
 
 @bp.route("/book/<book_id>/delete_comment?<comment_id>")
@@ -232,7 +222,37 @@ def update_status():
     db.session.commit()
     print("\nsuccessful:", book_status, "\n")
 
-    return redirect(request.referrer)
+    return jsonify(message="Status successfully updated.")
+
+
+@bp.post("/toggle_favorite")
+@login_required
+def toggle_favorite():
+    data = request.get_json()
+    user_id = int(data["user_id"])
+    book_id = data["book_id"]
+
+    # favorite = UserFavorite(**data)
+    # fav = UserFavorite.query.get((user_id, book_id))
+    favorite = db.session.get(UserFavorite, (user_id, book_id))
+    print("query:", favorite)
+    # print("exists:", sa.select(UserFavorite.user_id).where(user_id).exists())
+
+    user = db.session.get(User, user_id)
+    print(user.favorite_books)
+    print("\nalready in favorites", favorite in user.favorite_books, "\n")
+
+    if favorite:
+        db.session.delete(favorite)
+        response = jsonify(favorited=0, message="Successfully removed from favorites.")
+    else:
+        new_favorite = UserFavorite(**data)
+        db.session.add(new_favorite)
+        response = jsonify(favorited=1, message="Successfully added to favorites!")
+        print("\nnew favorite: ", new_favorite, "\n")
+
+    db.session.commit()
+    return response
 
 
 @bp.route("/api/search")
@@ -257,3 +277,16 @@ def api_search():
     }
 
     return jsonify(response)
+
+
+@bp.route("/api/get_comment")
+def get_comment():
+    comment_id = request.args.get("comment_id")
+
+    query = sa.select(Comment).filter_by(id=comment_id)
+    comment = db.session.scalar(query)
+
+    comment_dict = comment.__dict__
+    comment_dict.pop("_sa_instance_state")
+
+    return json.dumps(comment_dict, default=str)

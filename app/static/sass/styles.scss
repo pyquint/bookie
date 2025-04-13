@@ -2,6 +2,8 @@ $base-color: Ivory;
 $secondary-color: #fffae1;
 $header-logo-size: 50px;
 $hyperlink-color: #0d58c9;
+$search-suggestion-fg: #818630;
+$search-suggestion-bg: #e8ecb7;
 
 a {
     color: $hyperlink-color;
@@ -85,16 +87,26 @@ main {
     outline-color: transparent;
 }
 
+.suggestions,
+#search-for {
+    color: $search-suggestion-fg;
+    background-color: $search-suggestion-bg;
+}
+
 .suggestions {
     display: none;
     position: absolute;
     top: 100%;
     width: 100%;
     border: 1px solid #e0e0e0;
-    background-color: white;
     max-height: 200px;
     overflow-y: auto;
     z-index: 5;
+}
+
+#loading-icon {
+    padding: 8px;
+    width: 2rem;
 }
 
 .suggestion-item {
@@ -103,7 +115,7 @@ main {
 }
 
 .suggestion-item:hover {
-    background-color: $base-color;
+    background-color: #f1f3d3;
 }
 
 .bg-hero {
@@ -466,6 +478,6 @@ button.comment-action a {
     object-fit: cover;
 }
 
-#loading-icon {
-    width: 25%;
+.fav-status {
+    width: 1.5rem;
 }

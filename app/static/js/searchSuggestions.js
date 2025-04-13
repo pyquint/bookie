@@ -28,24 +28,27 @@ $(function () {
                     },
                 });
 
-            const suggestions = await response.json();
+            const responseJson = await response.json();
+            const suggestions = responseJson.result;
             const length = Object.keys(suggestions).length;
-
-
 
             if (query.length > 0 && length > 0) {
                 suggestionsBox.empty().show();
-                suggestions.result.forEach(function (suggestion) {
+                suggestions.slice(0, 10).forEach(function (suggestion) {
                     const book = suggestion;
                     suggestionsBox.append("<div class='suggestion-item'>" + book[type] + "</div>");
                 });
+                suggestionsBox.append("<div class='suggestion-item' id='goto-search'><button id='search-for' type='submit'" +
+                    "style='background:none; border:none; margin:0; padding:0; cursor: pointer;'> -> Search for '" + query + "'</button></div>");
             } else {
                 suggestionsBox.hide();
             }
 
             suggestionsBox.on("click", ".suggestion-item", function () {
-                $("#search-bar").val($(this).text());
-                suggestionsBox.hide();
+                if (!($(this).attr("id") == "goto-search")) {
+                    $("#search-bar").val($(this).text());
+                    suggestionsBox.hide();
+                }
             });
 
             $(document).on('click', function (event) {

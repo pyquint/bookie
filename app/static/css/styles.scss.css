@@ -57,23 +57,31 @@ h6 {
   outline: none;
   outline-color: transparent; }
 
+.suggestions,
+#search-for {
+  color: #818630;
+  background-color: #e8ecb7; }
+
 .suggestions {
   display: none;
   position: absolute;
   top: 100%;
   width: 100%;
   border: 1px solid #e0e0e0;
-  background-color: white;
   max-height: 200px;
   overflow-y: auto;
   z-index: 5; }
+
+#loading-icon {
+  padding: 8px;
+  width: 2rem; }
 
 .suggestion-item {
   padding: 8px;
   cursor: pointer; }
 
 .suggestion-item:hover {
-  background-color: Ivory; }
+  background-color: #f1f3d3; }
 
 .bg-hero {
   padding-top: 75px; }
@@ -344,7 +352,7 @@ button.comment-action a {
 .profile-picture {
   object-fit: cover; }
 
-#loading-icon {
-  width: 25%; }
+.fav-status {
+  width: 1.5rem; }
 
 /*# sourceMappingURL=styles.scss.css.map */

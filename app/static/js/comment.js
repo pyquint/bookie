@@ -1,11 +1,13 @@
 $(function () {
-    CKEDITOR.replace("commentbox");
+    window.CKEDITOR.replace("commentbox");
+    $("table").addClass("table table-bordered table-sm");
 });
 
 function quoteComment(comment_id, op) {
+    console.log("commenting...");
     $.ajax({
         type: "GET",
-        url: "/get_comment",
+        url: "/api/get_comment",
         data: { comment_id: comment_id },
         contentType: "application/json",
 
@@ -20,7 +22,7 @@ function quoteComment(comment_id, op) {
 
     function _quote(Comment, op) {
         $("html, body").animate({ scrollTop: $(document).height() - $(window).height() });
-        const editor = CKEDITOR.instances.commentbox;
+        const editor = window.CKEDITOR.instances.commentbox;
         editor.insertHtml("<blockquote>" + Comment.comment + "</blockquote><br/>");
     }
 }

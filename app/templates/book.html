@@ -48,11 +48,11 @@
                 <hr />
 
                 <div class="border border-2 p-4 mb-4 w-50" id="status-container">
-                    <form role="status" action="{{ url_for('main.update_status') }}" method="post" id="update-status">
+                    <form role="status" action="{{ url_for('main.update_status') }}" method="post" id="update-status-form">
                         <input type="hidden" name="book_id" value="{{ book.id }}" />
                         <label for="status-dropdown">Reading Status:</label>
                         <select name="status_id" class="form-select dropdown-toggle" id="status-dropdown" autocomplete="off">
-                            <option value="1" {% if book_status.reading_status_id == 1 %}selected{% endif %}>
+                            <option value="1" {% if book_status.reading_status_id == '1' %}selected{% endif %}>
                                 Plan to Read
                             </option>
                             <option value="2" {% if book_status.reading_status_id == 2 %}selected{% endif %}>
@@ -74,7 +74,32 @@
                         {# <input class="form-control" type="number" name="page" id="page" /> #}
 
                         {% if current_user.is_authenticated %}
-                            <button class="btn btn-warning mt-3" type="submit">Update</button>
+                            <div id="book-actions-container">
+                                <button class="btn btn-warning mt-3" type="submit" id="update-status-btn">Update</button>
+                                <button class="btn btn-outline-warning mt-3"
+                                        type="button"
+                                        id="add-to-favorites-btn"
+                                        onClick="javascript:toggleFavorite('{{ book.id }}', '{{ current_user.id }}')">
+                                    {% if book in current_user.favorite_books %}
+                                        <img src="{{ url_for('static', filename='img/gold_star.svg') }}"
+                                             alt="fav"
+                                             class="fav-status"
+                                             id="current-book-fav-status-img"
+                                             data-fav="true" />
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='img/grey_star.svg') }}"
+                                             alt="fav"
+                                             class="fav-status"
+                                             id="current-book-fav-status-img"
+                                             data-fav="false" />
+                                    {% endif %}
+                                </button>
+                                <div id="book-actions-msg-container">
+                                    <img src="{{ url_for('static', filename='img/yt_loading_symbol_3.gif') }}"
+                                         id="loading-icon"
+                                         alt="loading..." />
+                                </div>
+                            </div>
                         {% else %}
                             <p>Log in to start tracking your progress!</p>
                             <button class="btn btn-success">
@@ -177,5 +202,26 @@
     </div>
 
     {{ ckeditor.load() }}
-    <script src="{{ url_for('static', filename='/js/comment.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/book.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/comment.js') }}"></script>
+
+    <script>
+        function toggleFavIcon() {
+            const img = $("#current-book-fav-status-img");
+            // could've used img.data("fav"), but for some caching reason,
+            // and in general the implementation of jQuery.data(), I resorted to attr
+            // https://stackoverflow.com/a/8708345
+            const isFav = img.attr("data-fav")
+
+            if (isFav == "true") {
+                img.attr("src", "{{ url_for('static', filename='img/grey_star.svg') }}");
+                img.attr("data-fav", "false")
+            } else {
+                img.attr("src", "{{ url_for('static', filename='img/gold_star.svg') }}");
+                img.attr("data-fav", "true")
+            }
+        }
+    </script>
+
 {% endblock content %}

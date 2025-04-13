@@ -67,6 +67,10 @@ class User(db.Model, UserMixin):
     comments: WriteOnlyMapped["Comment"] = relationship(back_populates="user")
     book_statuses: Mapped[list["BookStatus"]] = relationship(back_populates="user")
 
+    favorite_books: Mapped[list["Book"]] = relationship(
+        secondary="user_favorites", backref="favorited_by_users", viewonly=True
+    )
+
     def get_id(self):
         return self.id
 
@@ -89,7 +93,7 @@ class User(db.Model, UserMixin):
         return status
 
     def __repr__(self):
-        return f"<[ID: {self.id}] User {self.username}>"
+        return f"<User {self.id} {self.username}>"
 
 
 class Comment(db.Model):
@@ -108,7 +112,7 @@ class Comment(db.Model):
     user_id: Mapped[int] = mapped_column(db.ForeignKey(User.id), index=True)
 
     def __repr__(self):
-        return f'<[ID: {self.id}] Comment "{self.comment}">'
+        return f'<Comment {self.id} "{self.comment}">'
 
     def date_created_fmt(self, fmt):
         return self.date_created.strftime(fmt)
@@ -122,7 +126,7 @@ class ReadingStatus(db.Model):
     book_statuses: Mapped[list["BookStatus"]] = relationship(back_populates="status")
 
     def __repr__(self):
-        return f"<Reading Status '{self.name}'>"
+        return f"<Reading Status {self.id} '{self.name}'>"
 
 
 class BookStatus(db.Model):
@@ -140,4 +144,18 @@ class BookStatus(db.Model):
     book: Mapped[Book] = relationship(back_populates="book_statuses")
 
     def __repr__(self):
-        return f"<{self.id}, {self.book}, {self.user}, {self.status}, {self.finished_chapters}>"
+        return f"<BookStatus {self.id}, {self.book}, {self.user}, {self.status}, {self.finished_chapters}>"
+
+
+class UserFavorite(db.Model):
+    __tablename__ = "user_favorites"
+
+    user_id: Mapped[int] = mapped_column(
+        db.ForeignKey(User.id), primary_key=True, autoincrement=False
+    )
+    book_id: Mapped[str] = mapped_column(
+        db.ForeignKey(Book.id), primary_key=True, autoincrement=False
+    )
+
+    # def __repr__(self):
+    #     return f"<UserFavorite {self.user.id}, {self.book.id}"
