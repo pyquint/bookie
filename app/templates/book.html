@@ -50,6 +50,7 @@
                 <div class="border border-2 p-4 mb-4 w-50" id="status-container">
                     <form role="status" action="{{ url_for('main.update_status') }}" method="post" id="update-status-form">
                         <input type="hidden" name="book_id" value="{{ book.id }}" />
+                        {% set book_status = book.get_status_for(current_user.id) %}
                         <label for="status-dropdown">Reading Status:</label>
                         <select name="status_id" class="form-select dropdown-toggle" id="status-dropdown" autocomplete="off">
                             <option value="1" {% if book_status.reading_status_id == '1' %}selected{% endif %}>
@@ -145,7 +146,7 @@
                 <h4 class="border-bottom border-secondary">
                     Comments on: <span class="text-muted book-title">{{ book.title }}</span>
                 </h4>
-                {% for comment in comments %}
+                {% for comment in book.comments     %}
                     <div class="card mb-2">
                         <div class="row">
                             <div class="col-sm-2 d-flex flex-column ps-4 border-end border-light-subtle">

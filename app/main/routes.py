@@ -1,6 +1,5 @@
 import json
 import os
-import time
 
 import markdown
 import sqlalchemy as sa
@@ -9,7 +8,7 @@ from flask_login import (
     current_user,
     login_required,
 )
-from sqlalchemy import desc, exc
+from sqlalchemy import desc
 
 from app import db
 from app.main import bp
@@ -27,47 +26,44 @@ def index():
 @bp.route("/search", methods=["GET"])
 def search():
     query = sa.select(Book)
-    all = request.args.get("all", "false")
+    query_all = request.args.get("all", "false") == "true"
 
-    if all == "false":
+    if not query_all:
         for column in Book.__table__.columns:
-            if arg_value := request.args.get(column.name):
-                print(arg_value)
-                query = query.filter(getattr(Book, column.name).like(f"%{arg_value}%"))
+            if value := request.args.get(column.name):
+                attr = getattr(Book, column.name)
+                query = query.filter(attr.like(f"%{value}%"))
 
-    sort = request.args.get("sort", "num_ratings")
+    sort_field = request.args.get("sort", "num_ratings")
+    sort_order = request.args.get("order", "desc")
+    sort_by_attr = getattr(Book, sort_field)
+    order_by_query_clause = sort_by_attr if sort_order == "asc" else desc(sort_by_attr)
+
     page = request.args.get("page", 1, type=int)
-    order = request.args.get("order", "desc")
     per_page = request.args.get("per_page", 10, type=int)
 
-    sortby_attr = getattr(Book, sort)
-
-    if order == "desc":
-        sorted_query = query.order_by(desc(sortby_attr))
-    else:
-        sorted_query = query.order_by(sortby_attr)
-
+    sorted_query = query.order_by(order_by_query_clause)
     results = db.paginate(sorted_query, page=page, per_page=per_page, error_out=False)
 
-    params = request.args.to_dict()
-    params.pop("page")
+    search_parameters = {
+        param: val for param, val in request.args.items() if param != "page"
+    }
 
     prev_page_url = (
-        url_for("main.search", **params, page=results.page - 1)
+        url_for("main.search", **search_parameters, page=results.page - 1)
         if results.has_prev
         else None
     )
 
     next_page_url = (
-        url_for("main.search", **params, page=results.page + 1)
+        url_for("main.search", **search_parameters, page=results.page + 1)
         if results.has_next
         else None
     )
 
     return render_template(
         "search_results.html",
-        args=request.args,
-        sort=sort,
+        args=search_parameters,
         results=results,
         prev_page_url=prev_page_url,
         next_page_url=next_page_url,
@@ -86,15 +82,9 @@ def book(book_id):
     if book is None:
         return redirect("/")
 
-    query = sa.select(Comment).filter(Comment.book_id == book_id)
-    comments = db.session.scalars(query)
-
-    if current_user.is_authenticated:
-        book_status = current_user.get_book_status(book_id)
-    else:
-        book_status = None
-
-    print("\n", book_status, "\n")
+    # query = sa.select(Comment).filter(Comment.book_id == book_id)
+    # comments = db.session.scalars(query)
+    # book_status = db.session.get(BookStatus, (current_user.id, book_id))
 
     return render_template(
         "book.html",
@@ -104,8 +94,6 @@ def book(book_id):
             if request.referrer != request.url
             else url_for("main.index")
         ),
-        comments=comments,
-        book_status=book_status,
     )
 
 
@@ -231,16 +219,10 @@ def toggle_favorite():
     data = request.get_json()
     user_id = int(data["user_id"])
     book_id = data["book_id"]
-
-    # favorite = UserFavorite(**data)
-    # fav = UserFavorite.query.get((user_id, book_id))
     favorite = db.session.get(UserFavorite, (user_id, book_id))
-    print("query:", favorite)
-    # print("exists:", sa.select(UserFavorite.user_id).where(user_id).exists())
 
     user = db.session.get(User, user_id)
     print(user.favorite_books)
-    print("\nalready in favorites", favorite in user.favorite_books, "\n")
 
     if favorite:
         db.session.delete(favorite)
@@ -249,7 +231,6 @@ def toggle_favorite():
         new_favorite = UserFavorite(**data)
         db.session.add(new_favorite)
         response = jsonify(favorited=1, message="Successfully added to favorites!")
-        print("\nnew favorite: ", new_favorite, "\n")
 
     db.session.commit()
     return response

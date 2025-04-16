@@ -9,7 +9,7 @@ from flask_login import (
     logout_user,
 )
 
-from app import db, ph
+from app import db
 from app.auth import bp
 from app.auth.forms import ForgotPasswordForm, LoginForm, SignupForm
 from app.models import User
@@ -20,10 +20,7 @@ def signup():
     form = SignupForm()
 
     if form.validate_on_submit():
-        username = request.form.get("username")
-        email = request.form.get("email")
-        password_plaintext = request.form.get("password")
-        password_hash = ph.hash(password_plaintext)
+        username = form.username.data
         date_created = datetime.now()
 
         flash(
@@ -33,9 +30,9 @@ def signup():
 
         user = User(
             username=username,
-            email=email,
-            password_hash=password_hash,
+            email=form.email.data,
         )
+        user.set_password(form.password.data)
 
         db.session.add(user)
         db.session.commit()
@@ -56,20 +53,24 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        username = request.form.get("username")
-        password = request.form.get("password")
+        username = form.username.data
+        password = form.password.data
 
         query = sa.select(User).filter_by(username=username)
-        user = db.session.scalars(query).first()
+        user = db.session.scalar(query)
 
-        if user and user.check_password(password):
-            login_user(user, remember=request.form.get("remember_me"))
-            # flash("Logged in successfully.")
-            next_redirect = request.form.get("next")
-            return redirect(next_redirect)
-        else:
-            flash("Invalid username or password.")
+        if user:
+            if user.check_password(password):
+                login_user(user, remember=form.remember_me.data)
+                flash("Logged in successfully.")
+                next_redirect = request.form.get("next")
+                return redirect(next_redirect)
+            else:
+                flash("Invalid password.")
             return redirect(url_for("main.index"))
+        else:
+            flash(f"No such user '{username}'.")
+            return redirect(url_for("auth.login"))
 
     return render_template("auth/login.html", form=form)
 
@@ -79,12 +80,12 @@ def forgot_password():
     form = ForgotPasswordForm()
 
     if form.validate_on_submit():
-        email = request.form.get("email")
+        email = form.email.data
         query = sa.select(User).filter_by(email=email)
         user = db.session.scalar(query)
 
         if user:
-            new_password = request.form.get("new_password")
+            new_password = form.new_password.data
             current_user.set_password(new_password)
             db.session.commit()
             render_template("auth/reset_successful.html")
