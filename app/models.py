@@ -219,7 +219,7 @@ class Character(db.Model):
     name: Mapped[str] = mapped_column(index=True)
 
     books: Mapped[list["Book"]] = relationship(
-        back_populates="characters", secondary="book_characters"
+        back_populates="characters", secondary="book_characters", lazy="dynamic"
     )
 
     def __repr__(self):

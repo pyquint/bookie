@@ -1,7 +1,7 @@
 <!-- sorting options -->
-<div class="sort-container mt-4 mb-4">
+<div class="sort-container mt-2 mb-4">
     <form role="sort" action="{{ endpoint_url }}" method="get" id="sort-results" autocomplete="off">
-        <label for="sort">Sort by:</label>
+        <label for="sort" class="form-label">Sort by:</label>
         <div class="row g-2">
             <div class="col">
                 <select name="sort" class="form-select" id="sortby">
@@ -23,82 +23,84 @@
         </div>
 
         {% for key in args %}
-            <input type="hidden" name="{{ key }}" id="{{ key }}" value="{{ args[key] }}" />
+            {# conditional since sort is already defined #}
+            {% if key != "sort" %}
+                <input type="hidden" name="{{ key }}" id="{{ key }}" value="{{ args[key] }}" />
+            {% endif %}
         {% endfor %}
     </form>
 </div>
 
 <!-- display books -->
-<div class="row">
-    {% for book in results %}
-        <div class="col-lg-6">
-            <div class="card card-custom">
-                <div class="col p-0 d-flex card-book-thumb">
-                    <a href="{{ url_for('main.book', book_id=book.id) }}" class="text-decoration-none">
-                        {% if book.cover_img %}
-                            <img src="{{ book.cover_img }}" class="book-thumb book-thumb-front" alt="{{ book.cover_img }}" />
+<div class="mt-4 mb-4">
+    <div class="row align-items-center justify-content-center">
+        {% for book in results %}
+            <div class="col-lg-6">
+                <div class="card card-custom">
+                    <div class="col p-0 d-flex card-book-thumb">
+                        <a href="{{ url_for('main.book', book_id=book.id) }}" class="text-decoration-none">
+                            <img src="{{ book.cover_img }}" class="book-thumb book-thumb-front" alt="{{ book.title }}" />
                             <img src="{{ book.cover_img }}" class="book-thumb book-thumb-back" alt="" />
-                        {% else %}
-                            <p class="book-thumb book-thumb-front">(no book cover available)</p>
-                        {% endif %}
-                    </a>
-                </div>
-                <div class="col card-body-col result-card-body overflow-y-scroll">
-                    <div class="row">
-                        <h4 class="card-title book-title book-card-title hyperlink-on-hover">
-                            <a href="{{ url_for('main.book', book_id=book.id) }}" class="text-decoration-none">{{ book.title }}</a>
-                        </h4>
+                        </a>
                     </div>
+                    <div class="col card-body-col result-card-body overflow-y-scroll">
+                        <div class="row">
+                            <h4 class="card-title book-title book-card-title hyperlink-on-hover">
+                                <a href="{{ url_for('main.book', book_id=book.id) }}" class="text-decoration-none">{{ book.title }}</a>
+                            </h4>
+                        </div>
 
-                    <hr />
+                        <hr />
 
-                    <div class="row result-card-info">
-                        <div class="card-body">
-                            <div class="text-muted">
-                                <p class="mb-1">
-                                    <strong>
-                                        {# appending the s only adds a space like what? #}
-                                        {# Authors
+                        <div class="row result-card-info">
+                            <div class="card-body">
+                                <div class="text-muted">
+                                    <p class="mb-1">
+                                        <strong>
+                                            {# appending the s only adds a space like what? #}
+                                            {# Authors
                                         {% if book.authors | length > 1 %}s{% else %}{% endif %} #}
-                                        {% if book.authors | length > 1 %}
-                                            Authors:
-                                        {% else %}
-                                            Author:
-                                        {% endif %}
-                                    </strong>
-                                    <ul>
-                                        {% for author in book.authors %}
-                                            <li>
-                                                <a href="{{ url_for('main.author', name=author.name) }}">{{ author.name }}</a>
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                </p>
-                                <p class="mb-1">
-                                    <strong>Published:</strong> {{ book.publish_date }}
-                                </p>
-                                <p class="mb-1">
-                                    <strong>ISBN:</strong> {{ book.isbn }}
-                                </p>
-                                <p class="mb-1">
-                                    <strong>Publisher:</strong> <a href="{{ url_for('main.publisher', name=book.publisher.name) }}">{{ book.publisher.name }}</a>
-                                </p>
-                                <p class="mb-1">
-                                    <strong>Pages:</strong> {{ book.pages }}
-                                </p>
-                                <p class="mb-1">
-                                    <strong>Num Ratings:</strong> {{ "{:,.2f}".format(book.num_ratings) }}
-                                </p>
-                                <p class="mb-1">
-                                    <strong>Rating:</strong> {{ book.rating }}
-                                </p>
+                                            {% if book.authors | length > 1 %}
+                                                Authors:
+                                            {% else %}
+                                                Author:
+                                            {% endif %}
+                                        </strong>
+                                        <ul>
+                                            {% for author in book.authors %}
+                                                <li>
+                                                    <a href="{{ url_for('main.author', name=author.name | urlencode) }}">{{ author.name }}</a>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Published:</strong> {{ book.publish_date }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>ISBN:</strong> {{ book.isbn }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Publisher:</strong> <a href="{{ url_for('main.publisher', name=book.publisher.name | urlencode) }}">{{ book.publisher.name }}</a>
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Pages:</strong> {{ book.pages }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Num Ratings:</strong> {{ "{:,.2f}".format(book.num_ratings) }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Rating:</strong> {{ book.rating }}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    {% endfor %}
+        {% endfor %}
+    </div>
 </div>
+
 
 {% include "_pagination.html" %}

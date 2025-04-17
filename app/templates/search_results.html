@@ -5,11 +5,13 @@
 {% endblock title %}
 
 {% block content %}
-    <div class="container-md">
-        <h1 class="mt-4 mb-4">
+    <div class="container-md mb-4">
+        <h1 class="mt-4">
             <strong>{{ header | safe }}</strong>
         </h1>
-        {% for arg in search_args %}<p class="fs-6 badge text-bg-success m-1">{{ arg }}</p>{% endfor %}
+        {% for parameter in search_parameters %}
+            <p class="fs-6 badge text-bg-success m-1">{{ parameter }}</p>
+        {% endfor %}
         {% if results.items %}
             {% include "_book_results.html" %}
         {% else %}

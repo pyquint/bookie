@@ -1,18 +1,14 @@
 <div class="pagination-container d-flex justify-content-center">
     <nav aria-label="pagination">
         <ul class="pagination">
-            <!-- Previous Button -->
             <li class="page-item {% if not prev_page_url %}disabled{% endif %}">
                 <a href="{{ prev_page_url or '#' }}" class="page-link">«</a>
             </li>
 
-            <!-- Page Number Input -->
             <li class="page-item disabled">
                 <span class="page-link">Page</span>
             </li>
-
-            <form action="{{ request.url }}" method="get">
-
+            <form action="{{ endpoint_url }}" method="get">
                 <input type="number"
                        class="form-control"
                        name="page"
@@ -20,13 +16,19 @@
                        min="1"
                        max="{{ results.pages }}"
                        required />
+
+                {% for key in args %}
+                    {% if key != "page" %}
+                        <input type="hidden" name="{{ key }}" id="{{ key }}" value="{{ args[key] }}" />
+                    {% endif %}
+                {% endfor %}
+
             </form>
 
             <li class="page-item disabled">
                 <span class="page-link">of {{ results.pages }}</span>
             </li>
 
-            <!-- Next Button -->
             <li class="page-item {% if not next_page_url %}disabled{% endif %}">
                 <a href="{{ next_page_url or '#' }}" class="page-link">»</a>
             </li>

@@ -40,6 +40,10 @@ input[type='number'] {
     }
 }
 
+.btn {
+    color: rgb(247, 242, 227);
+}
+
 input:focus,
 select:focus,
 textarea:focus,
@@ -79,6 +83,10 @@ main {
 
 #search-type-dropdown option {
     color: $text-dark;
+}
+
+#search-type-dropdown {
+    width: 100px;
 }
 
 #search-bar-container {
@@ -218,7 +226,7 @@ main {
 }
 
 .navbar-brand {
-    margin-right: 3.4rem;
+    margin-right: 1rem;
 
     &:hover {
         transform: scale(1.02);

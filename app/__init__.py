@@ -27,7 +27,8 @@ ckeditor = CKEditor()
 
 CATALOGUES = ("authors", "genres", "publisher")
 SEARCHABLE_STRING_FIELDS = ("title", "isbn")
-SEARCHABLE_RELATIONSHIP_FIELDS = ("authors", "genres", "publisher")
+SEARCHABLE_RELATIONSHIP_FIELDS = ("authors", "genres", "characters", "publisher")
+SEARCHABLE_FIELDS = SEARCHABLE_STRING_FIELDS + SEARCHABLE_RELATIONSHIP_FIELDS
 
 
 def create_app(config_class=Config):
@@ -50,6 +51,7 @@ def create_app(config_class=Config):
         return dict(
             SEARCHABLE_STRING_FIELDS=SEARCHABLE_STRING_FIELDS,
             SEARCHABLE_LIST_FIELDS=SEARCHABLE_RELATIONSHIP_FIELDS,
+            SEARCHABLE_FIELDS=SEARCHABLE_FIELDS,
             CATALOGUES=CATALOGUES,
         )
 
