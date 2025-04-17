@@ -1,6 +1,6 @@
 $(function () {
     window.CKEDITOR.replace("commentbox");
-    $("table").addClass("table table-bordered table-sm");
+    $("#comment-section table").addClass("table table-bordered table-sm");
 });
 
 function quoteComment(comment_id, op) {

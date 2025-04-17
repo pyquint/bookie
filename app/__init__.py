@@ -25,6 +25,10 @@ ph = PasswordHasher()
 login_manager = LoginManager()
 ckeditor = CKEditor()
 
+CATALOGUES = ("authors", "genres", "publisher")
+SEARCHABLE_STRING_FIELDS = ("title", "isbn")
+SEARCHABLE_RELATIONSHIP_FIELDS = ("authors", "genres", "publisher")
+
 
 def create_app(config_class=Config):
     app = Flask(__name__, template_folder="templates")
@@ -40,6 +44,14 @@ def create_app(config_class=Config):
             }
         },
     )
+
+    @app.context_processor
+    def inject_searchables():
+        return dict(
+            SEARCHABLE_STRING_FIELDS=SEARCHABLE_STRING_FIELDS,
+            SEARCHABLE_LIST_FIELDS=SEARCHABLE_RELATIONSHIP_FIELDS,
+            CATALOGUES=CATALOGUES,
+        )
 
     db.init_app(app)
     migrate.init_app(app, db)

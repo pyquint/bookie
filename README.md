@@ -8,11 +8,31 @@ Developed in Python and Flask, using SQLite as the database.
 2. View **book information**, **descriptions**, **ratings**, and more.
 
 # Todo
-- [ ] Sanitize dataset (inconsistent date format, duplicate entries, etc.)
+- Sanitize dataset
+  - Create table and add as a relationship:
+    - [x] authors
+    - [x] genres
+    - [x] publishers
+    - [x] characters
+    - [x] awards
+    - [ ] setting?
+    - [ ] language
+  - Treat as some list of values:
+    - [x] authors (as relationship)
+    - [x] genres (as relationship)
+    - [x] characters (as relationship)
+    - [x] awards (as relationship)
+    - [ ] setting?
+    - [ ] ratings_by_stars = [1_star_count, ..., 5_star_count]
+  - Fix inconsistency in type or formatting:
+    - [ ] pages
+    - [ ] publish date
+    - [ ] first publish date
+  - [x] Fix duplicate entries (note: relying on sqlite to reject duplicate book id)
 - [x] Add advanced search filtering (multiple search criterias, filter by genre or rating, etc.).
 - [x] Add flexible sorting of search results, e.g. by rating, publication date, alphabetical, etc.
-  - [ ] Sort by ascending or descending order.
-- [ ] Implement search keyword autocomplete.
+  - [x] Sort by ascending or descending order.
+- [x] Implement search keyword autocomplete.
 - [ ] Improve web design. Least priority.
 
 # Installation

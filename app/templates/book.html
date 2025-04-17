@@ -47,97 +47,186 @@
 
                 <hr />
 
-                <div class="border border-2 p-4 mb-4 w-50" id="status-container">
-                    <form role="status" action="{{ url_for('main.update_status') }}" method="post" id="update-status-form">
-                        <input type="hidden" name="book_id" value="{{ book.id }}" />
-                        {% set book_status = book.get_status_for(current_user.id) %}
-                        <label for="status-dropdown">Reading Status:</label>
-                        <select name="status_id" class="form-select dropdown-toggle" id="status-dropdown" autocomplete="off">
-                            <option value="1" {% if book_status.reading_status_id == '1' %}selected{% endif %}>
-                                Plan to Read
-                            </option>
-                            <option value="2" {% if book_status.reading_status_id == 2 %}selected{% endif %}>
-                                Currently Reading
-                            </option>
-                            <option value="3" {% if book_status.reading_status_id == 3 %}selected{% endif %}>Finished</option>
-                            <option value="4" {% if book_status.reading_status_id == 4 %}selected{% endif %}>Dropped</option>
-                        </select>
-
-                        <label for="finished-chapters">Chapter:</label>
-                        <input class="form-control"
-                               type="number"
-                               name="finished_chapters"
-                               id="finished-chapters"
-                               placeholder="{{ book_status.finished_chapters }}" />
-
-                        {# is tracking page no. necessary? #}
-                        {# <label for="page">Page:</label> #}
-                        {# <input class="form-control" type="number" name="page" id="page" /> #}
-
-                        {% if current_user.is_authenticated %}
-                            <div id="book-actions-container">
-                                <button class="btn btn-warning mt-3" type="submit" id="update-status-btn">Update</button>
-                                <button class="btn btn-outline-warning mt-3"
-                                        type="button"
-                                        id="add-to-favorites-btn"
-                                        onClick="javascript:toggleFavorite('{{ book.id }}', '{{ current_user.id }}')">
-                                    {% if book in current_user.favorite_books %}
-                                        <img src="{{ url_for('static', filename='img/gold_star.svg') }}"
-                                             alt="fav"
-                                             class="fav-status"
-                                             id="current-book-fav-status-img"
-                                             data-fav="true" />
-                                    {% else %}
-                                        <img src="{{ url_for('static', filename='img/grey_star.svg') }}"
-                                             alt="fav"
-                                             class="fav-status"
-                                             id="current-book-fav-status-img"
-                                             data-fav="false" />
-                                    {% endif %}
-                                </button>
-                                <div id="book-actions-msg-container">
-                                    <img src="{{ url_for('static', filename='img/yt_loading_symbol_3.gif') }}"
-                                         id="loading-icon"
-                                         alt="loading..." />
-                                </div>
-                            </div>
-                        {% else %}
-                            <p>Log in to start tracking your progress!</p>
-                            <button class="btn btn-success">
-                                <a href="{{ url_for('auth.login', next=request.url) }}" class="nav-link">Login</a>
-                            </button>
-                        {% endif %}
-                    </form>
-                </div>
-
                 <div class="row">
-                    <div class="col-md-4">
-                        {% if book.cover_img %}
-                            <img class="img-fluid w-100 border rounded-2" src="{{ book.cover_img }}" alt="book cover" />
-                        {% else %}
-                            <p>(no cover image avaiable)</p>
-                        {% endif %}
+                    <div class="col-md-4 h-100">
+                        <div class="border border-2 p-4">
+                            {% if book.cover_img %}
+                                <img class="img-fluid w-100 border rounded-2"
+                                     src="{{ book.cover_img }}"
+                                     alt="{{ book.cover_img }}"
+                                     id="book-cover-img" />
+                            {% else %}
+                                <p>(no cover image avaiable)</p>
+                            {% endif %}
+
+                            <div class="mt-4 mb-4" id="status-container">
+                                <form role="status" action="{{ url_for('main.update_status') }}" method="post" id="update-status-form">
+                                    <input type="hidden" name="book_id" value="{{ book.id }}" />
+                                    {% set book_status = book.get_status_for(current_user.id) %}
+                                    <label for="status-dropdown">Reading Status:</label>
+                                    <select name="status_id" class="form-select dropdown-toggle" id="status-dropdown" autocomplete="off">
+                                        <option value="1" {% if book_status.reading_status_id == '1' %}selected{% endif %}>
+                                            Plan to Read
+                                        </option>
+                                        <option value="2" {% if book_status.reading_status_id == 2 %}selected{% endif %}>
+                                            Currently Reading
+                                        </option>
+                                        <option value="3" {% if book_status.reading_status_id == 3 %}selected{% endif %}>Finished</option>
+                                        <option value="4" {% if book_status.reading_status_id == 4 %}selected{% endif %}>Dropped</option>
+                                    </select>
+
+                                    <label for="finished-chapters">Chapter:</label>
+                                    <input class="form-control"
+                                           type="number"
+                                           name="finished_chapters"
+                                           id="finished-chapters"
+                                           placeholder="{{ book_status.finished_chapters }}" />
+
+                                    {# is tracking page no. necessary? #}
+                                    {# <label for="page">Page:</label> #}
+                                    {# <input class="form-control" type="number" name="page" id="page" /> #}
+
+                                    {% if current_user.is_authenticated %}
+                                        <div id="book-actions-container">
+                                            <button class="btn btn-warning mt-3" type="submit" id="update-status-btn">Update</button>
+                                            <button class="btn btn-outline-warning mt-3"
+                                                    type="button"
+                                                    id="add-to-favorites-btn"
+                                                    onClick="javascript:toggleFavorite('{{ book.id }}', '{{ current_user.id }}')">
+                                                {% if book in current_user.favorite_books %}
+                                                    <img src="{{ url_for('static', filename='img/gold_star.svg') }}"
+                                                         alt="fav"
+                                                         class="fav-status"
+                                                         id="current-book-fav-status-img"
+                                                         data-fav="true" />
+                                                {% else %}
+                                                    <img src="{{ url_for('static', filename='img/grey_star.svg') }}"
+                                                         alt="fav"
+                                                         class="fav-status"
+                                                         id="current-book-fav-status-img"
+                                                         data-fav="false" />
+                                                {% endif %}
+                                            </button>
+                                            <div id="book-actions-msg-container">
+                                                <img src="{{ url_for('static', filename='img/yt_loading_symbol_3.gif') }}"
+                                                     id="loading-icon"
+                                                     alt="loading..." />
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <p>Log in to start tracking your progress!</p>
+                                        <button class="btn btn-success">
+                                            <a href="{{ url_for('auth.login', next=request.url) }}" class="nav-link">Login</a>
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="col-md-8">
-                        <p>
-                            <strong>Author/s:</strong> {{ book.author }}
-                            <br />
-                            <strong>Date of Publication:</strong> {{ book.publish_date }}
-                            <br />
-                            <strong>Publisher:</strong> {{ book.publisher }}
-                            <br />
-                            <br />
-                        </p>
-                        <h2>
-                            <strong>Description:</strong>
-                        </h2>
-
                         {% if book.description %}
-                            <p class="book-desc me-4">{{ book.description }}</p>
+                            <p class="book-description me-4">{{ book.description }}</p>
                         {% else %}
                             <p>No book description available.</p>
                         {% endif %}
+
+                        <hr />
+
+                        <div class="row">
+                            <div class="col p-2 m-2">
+                                <table class="table table-sm book-info-table">
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <strong>ISBN:</strong>
+                                            </td>
+                                            <td>{{ book.isbn }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Date of Publication:</strong>
+                                            </td>
+                                            <td>{{ book.publish_date }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>First Publish Date:</strong>
+                                            </td>
+                                            <td>{{ book.first_publish_date }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Publisher:</strong>
+                                            </td>
+                                            <td>{{ book.publisher }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Series:</strong>
+                                            </td>
+                                            <td>{{ book.series }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Edition:</strong>
+                                            </td>
+                                            <td>{{ book.edition }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Ratings:</strong>
+                                            </td>
+                                            <td>{{ book.num_ratings }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Format:</strong>
+                                            </td>
+                                            <td>{{ book.book_format }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="col p-2 m-2">
+                                <p>
+                                    <strong>
+                                        {% if book.authors | length > 1 %}
+                                            Authors:
+                                        {% else %}
+                                            Author:
+                                        {% endif %}
+                                    </strong>
+                                    <ul>
+                                        {% for author in book.authors %}
+                                            <li>
+                                                <a href="{{ url_for('main.author', name=author.name) }}">{{ author.name }}</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </p>
+                            </div>
+
+                            <div class="col p-2 m-2">
+                                <p>
+                                    <strong>
+                                        {% if book.genres | length > 1 %}
+                                            Genres:
+                                        {% else %}
+                                            Genre:
+                                        {% endif %}
+                                    </strong>
+                                    <ul>
+                                        {% for genre in book.genres %}
+                                            <li>
+                                                <a href="{{ url_for('main.genre', name=genre.name) }}">{{ genre.name }}</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -146,7 +235,7 @@
                 <h4 class="border-bottom border-secondary">
                     Comments on: <span class="text-muted book-title">{{ book.title }}</span>
                 </h4>
-                {% for comment in book.comments     %}
+                {% for comment in book.comments %}
                     <div class="card mb-2">
                         <div class="row">
                             <div class="col-sm-2 d-flex flex-column ps-4 border-end border-light-subtle">
@@ -185,7 +274,7 @@
 
                 <div class="mt-4 pb-4">
                     {% if current_user.is_authenticated %}
-                        <form method="post">
+                        <form method="post" autocomplete="off">
                             <div class="mb-4">
                                 {# I am using native html/js ckeditor here instead of flask in order to use the js script #}
                                 <textarea class="form-control" name="commentbox" id="commentbox" required></textarea>

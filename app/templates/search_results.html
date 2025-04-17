@@ -1,143 +1,17 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Search Results
+    {{ title }}
 {% endblock title %}
 
 {% block content %}
     <div class="container-md">
-        <h1 class="mt-4 mb-4">Search Results:</h1>
-
+        <h1 class="mt-4 mb-4">
+            <strong>{{ header | safe }}</strong>
+        </h1>
+        {% for arg in search_args %}<p class="fs-6 badge text-bg-success m-1">{{ arg }}</p>{% endfor %}
         {% if results.items %}
-            <!-- Sort Options -->
-            <div class="sort-container">
-                <form role="sort" action="{{ url_for('main.search') }}" method="get" id="sort-results">
-                    <input type="hidden" name="title" value="{{ args.title }}" />
-                    <input type="hidden" name="author" value="{{ args.author }}" />
-                    <input type="hidden" name="isbn" value="{{ args.isbn }}" />
-                    <input type="hidden" name="publisher" value="{{ args.publisher }}" />
-                    <input type="hidden" name="sort" id="sort" value="{{ args.sort }}" />
-                    <input type="hidden" name="order" id="order" value="{{ args.order }}" />
-
-                    <input type="hidden" name="page" value="1" />
-
-                    <label for="sort">Sort by:</label>
-                    <div class="row g-2">
-                        <div class="col">
-                            <select name="sort" class="form-select" id="sortby">
-                                <option value="title" {% if args.sort=='title' %}selected{% endif %}>Title</option>
-                                <option value="pages" {% if args.sort=='pages' %}selected{% endif %}>Pages</option>
-                                <option value="num_ratings" {% if args.sort=='num_ratings' %}selected{% endif %}>Ratings</option>
-                            </select>
-                        </div>
-                        <div class="col">
-                            <button class="btn btn-success border" id="order-btn" type="button">
-                                Order
-                                {% if args.order=='asc' %}
-                                    ↓
-                                {% else %}
-                                    ↑
-                                {% endif %}
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Book Results -->
-            <div class="row">
-                {% for book in results %}
-                    <div class="col-lg-6">
-                        <div class="card card-custom">
-                            <div class="col p-0 d-flex card-book-thumb">
-                                <a href="{{ url_for('main.book', book_id=book.id) }}" class="text-decoration-none">
-                                    {% if book.cover_img %}
-                                        <img src="{{ book.cover_img }}" class="book-thumb book-thumb-front" alt="book cover" />
-                                        <img src="{{ book.cover_img }}" class="book-thumb book-thumb-back" alt="" />
-                                    {% else %}
-                                        <p class="book-thumb book-thumb-front">(no book cover available)</p>
-                                    {% endif %}
-                                </a>
-                            </div>
-                            <div class="col card-body-col result-card-body overflow-y-scroll">
-                                <div class="row">
-                                    <h4 class="card-title book-title book-card-title hyperlink-on-hover">
-                                        <a href="{{ url_for('main.book', book_id=book.id) }}" class="text-decoration-none">{{ book.title }}</a>
-                                    </h4>
-                                </div>
-
-                                <hr />
-
-                                <div class="row result-card-info">
-                                    <div class="card-body">
-                                        <div class="text-muted">
-                                            <p class="mb-1">
-                                                <strong>Author(s):</strong> {{ book.author }}
-                                            </p>
-                                            <p class="mb-1">
-                                                <strong>Published:</strong> {{ book.publish_date }}
-                                            </p>
-                                            <p class="mb-1">
-                                                <strong>ISBN:</strong> {{ book.isbn }}
-                                            </p>
-                                            <p class="mb-1">
-                                                <strong>Publisher:</strong> {{ book.publisher }}
-                                            </p>
-                                            <p class="mb-1">
-                                                <strong>Pages:</strong> {{ book.pages }}
-                                            </p>
-                                            <p class="mb-1">
-                                                <strong>Ratings:</strong> {{ "{:,.2f}".format(book.num_ratings) }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-
-            <div class="pagination-container d-flex justify-content-center">
-                <nav aria-label="pagination">
-                    <ul class="pagination">
-                        <!-- Previous Button -->
-                        <li class="page-item {% if not prev_page_url %}disabled{% endif %}">
-                            <a href="{{ prev_page_url or '#' }}" class="page-link">«</a>
-                        </li>
-
-                        <!-- Page Number Input -->
-                        <li class="page-item disabled">
-                            <span class="page-link">Page</span>
-                        </li>
-
-                        <form action="{{ url_for('main.search') }}" method="get">
-                            <input type="hidden" name="title" value="{{ args.title }}" />
-                            <input type="hidden" name="author" value="{{ args.author }}" />
-                            <input type="hidden" name="isbn" value="{{ args.isbn }}" />
-                            <input type="hidden" name="publisher" value="{{ args.publisher }}" />
-                            <input type="hidden" name="sort" value="{{ args.sort }}" />
-
-                            <input type="number"
-                                   class="form-control"
-                                   name="page"
-                                   value="{{ results.page }}"
-                                   min="1"
-                                   max="{{ results.pages }}"
-                                   required />
-                        </form>
-
-                        <li class="page-item disabled">
-                            <span class="page-link">of {{ results.pages }}</span>
-                        </li>
-
-                        <!-- Next Button -->
-                        <li class="page-item {% if not next_page_url %}disabled{% endif %}">
-                            <a href="{{ next_page_url or '#' }}" class="page-link">»</a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
+            {% include "_book_results.html" %}
         {% else %}
             <p class="no-results">No results found for your search.</p>
         {% endif %}

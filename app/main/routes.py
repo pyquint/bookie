@@ -8,11 +8,12 @@ from flask_login import (
     current_user,
     login_required,
 )
+from flask_sqlalchemy.pagination import Pagination
 from sqlalchemy import desc
 
-from app import db
+from app import SEARCHABLE_RELATIONSHIP_FIELDS, SEARCHABLE_STRING_FIELDS, db
 from app.main import bp
-from app.models import Book, BookStatus, Comment, User
+from app.models import Author, Book, BookStatus, Comment, Genre, Publisher, User
 from bookie import UserFavorite
 
 
@@ -23,56 +24,231 @@ def index():
     return render_template("index.html")
 
 
-@bp.route("/search", methods=["GET"])
-def search():
-    query = sa.select(Book)
-    query_all = request.args.get("all", "false") == "true"
-
-    if not query_all:
-        for column in Book.__table__.columns:
-            if value := request.args.get(column.name):
-                attr = getattr(Book, column.name)
-                query = query.filter(attr.like(f"%{value}%"))
-
-    sort_field = request.args.get("sort", "num_ratings")
-    sort_order = request.args.get("order", "desc")
-    sort_by_attr = getattr(Book, sort_field)
-    order_by_query_clause = sort_by_attr if sort_order == "asc" else desc(sort_by_attr)
+def paginate(
+    request, book_query, per_page=10, error_out=False, *args, **kwargs
+) -> tuple[Pagination, str, str]:
+    """Paginate the query results and return the pagination object along with previous and next page URLs."""
 
     page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 10, type=int)
+    pagination = db.paginate(
+        book_query, page=page, per_page=per_page, error_out=error_out
+    )
 
-    sorted_query = query.order_by(order_by_query_clause)
-    results = db.paginate(sorted_query, page=page, per_page=per_page, error_out=False)
-
-    search_parameters = {
-        param: val for param, val in request.args.items() if param != "page"
-    }
-
-    prev_page_url = (
-        url_for("main.search", **search_parameters, page=results.page - 1)
-        if results.has_prev
+    previous_page_url = (
+        url_for(request.endpoint, page=pagination.page - 1, *args, **kwargs)
+        if pagination.has_prev
         else None
     )
 
     next_page_url = (
-        url_for("main.search", **search_parameters, page=results.page + 1)
-        if results.has_next
+        url_for(request.endpoint, page=pagination.page + 1, *args, **kwargs)
+        if pagination.has_next
         else None
     )
+    return pagination, previous_page_url, next_page_url
+
+
+def get_arg(key: str, default=None):
+    """Get the value of a key from the request.args dictionary, or return the default value."""
+    value = request.args.get(key, default)
+    return value if value else default
+
+
+def process_book_query(
+    request, book_query, title="Search Results", header="", **kwargs
+):
+    sort_field = get_arg("sort", "num_ratings")
+    sort_order = get_arg("order", "desc")
+    sort_by_attr = getattr(Book, sort_field)
+    order_by_query_clause = sort_by_attr if sort_order == "asc" else desc(sort_by_attr)
+
+    sorted_query = book_query.order_by(order_by_query_clause)
+
+    search_parameters = {k: v for k, v in request.args.items() if k and k != "page"}
+
+    if "sort" in search_parameters:
+        search_parameters["sort"] = sort_field
+    if "order" in search_parameters:
+        search_parameters["order"] = sort_order
+
+    results, prev_page_url, next_page_url = paginate(
+        request, sorted_query, **search_parameters, **kwargs
+    )
+
+    endpoint_url = url_for(request.endpoint, **kwargs)
+
+    search_args = [
+        f"{field}='{value}'"
+        for field, value in search_parameters.items()
+        if field in SEARCHABLE_STRING_FIELDS + SEARCHABLE_RELATIONSHIP_FIELDS and value
+    ]
 
     return render_template(
         "search_results.html",
+        endpoint_url=endpoint_url,
+        title=title,
+        header=header,
         args=search_parameters,
+        results=results,
+        prev_page_url=prev_page_url,
+        next_page_url=next_page_url,
+        search_args=search_args,
+        **kwargs,
+    )
+
+
+def and_like_query(args: dict, default=""):
+    """Create a type-agnostic LIKE query based on the provided arguments."""
+    query = sa.select(Book)
+
+    for field in SEARCHABLE_STRING_FIELDS:
+        if value := args.get(field):
+            query = query.filter(getattr(Book, field).like(f"%{value}%"))
+
+    for field in SEARCHABLE_RELATIONSHIP_FIELDS:
+        if value := args.get(field):
+            match field:
+                case "authors":
+                    filter = Book.authors.any(Author.name.like(f"%{value}%"))
+                case "genres":
+                    filter = Book.genres.any(Genre.name.like(f"%{value}%"))
+                case "publisher":
+                    filter = Book.publisher.has(Publisher.name.like(f"%{value}%"))
+
+            query = query.filter(filter)
+
+    return query
+
+
+def or_like_query(args: dict):
+    """Create a type-agnostic LIKE query based on the provided arguments."""
+    query = sa.select(Book)
+    or_conditions = set()
+
+    for field in SEARCHABLE_STRING_FIELDS:
+        if value := args.get(field):
+            attr = getattr(Book, field)
+            or_conditions.add(attr.like(f"%{value}%"))
+
+    for field in SEARCHABLE_RELATIONSHIP_FIELDS:
+        if value := args.get(field):
+            match field:
+                case "authors":
+                    cond = Book.authors.any(Author.name.like(f"%{value}%"))
+                case "genres":
+                    cond = Book.genres.any(Genre.name.like(f"%{value}%"))
+                case "publisher":
+                    cond = Book.publisher.has(Publisher.name.like(f"%{value}%"))
+
+            or_conditions.add(cond)
+
+    # query = query.filter(Book.authors.any(Author.name.like(f"%{"row"}%")))
+
+    if or_conditions:
+        query = query.filter(sa.or_(*or_conditions))
+
+    return query
+
+
+@bp.route("/search", methods=["GET"])
+def search():
+    query_all = request.args.get("all", "false") == "true"
+    field = get_arg("field", "title")
+    kwargs = dict()
+
+    if field == "all":
+        q = get_arg("query")
+        args = {k: q for k in SEARCHABLE_STRING_FIELDS + SEARCHABLE_RELATIONSHIP_FIELDS}
+        query = or_like_query(args)
+        kwargs["header"] = f"Search results for all fields with '{q}'"
+    else:
+        args = request.args
+        query = and_like_query(args)
+        kwargs["header"] = "Search results for:"
+
+    kwargs["header"] = "Book Catalogue" if query_all else kwargs["header"]
+
+    query = sa.select(Book) if query_all else query
+
+    return process_book_query(request, query, **kwargs)
+
+
+@bp.route("/advanced_search")
+def advanced_search():
+    return render_template("advanced_search.html")
+
+
+@bp.route("/catalogues", methods=["GET"])
+def catalogues():
+    return render_template("catalogues.html", catalogues=SEARCHABLE_RELATIONSHIP_FIELDS)
+
+
+@bp.route("/catalogue/<catalogue>", methods=["GET"])
+def catalogue(catalogue):
+    match catalogue:
+        case "authors" | "author":
+            model = Author
+            catalogue = "author"
+        case "genres" | "genre":
+            model = Genre
+            catalogue = "genre"
+        case "publisher":
+            model = Publisher
+
+    query = sa.select(model).order_by(model.name)
+    results, prev_page_url, next_page_url = paginate(
+        request, query, per_page=100, catalogue=catalogue
+    )
+
+    return render_template(
+        "catalogue.html",
+        catalogue=catalogue,
         results=results,
         prev_page_url=prev_page_url,
         next_page_url=next_page_url,
     )
 
 
-@bp.route("/advanced_search")
-def advanced_search():
-    return render_template("advanced_search.html")
+@bp.route("/author/<name>", methods=["GET", "POST"])
+def author(name):
+    query = sa.select(Author).filter_by(name=name)
+    author = db.first_or_404(query)
+
+    return process_book_query(
+        request,
+        author.books,
+        name,
+        f"Author: {author.name}",
+        name=name,
+    )
+
+
+@bp.route("/genre/<name>", methods=["GET", "POST"])
+def genre(name):
+    query = sa.select(Genre).filter_by(name=name)
+    genre = db.first_or_404(query)
+
+    return process_book_query(
+        request,
+        genre.books,
+        name,
+        f"Genre: {genre.name}",
+        name=name,
+    )
+
+
+@bp.route("/publisher/<name>", methods=["GET", "POST"])
+def publisher(name):
+    query = sa.select(Publisher).filter_by(name=name)
+    genre = db.first_or_404(query)
+
+    return process_book_query(
+        request,
+        genre.books,
+        name,
+        f"Publisher: {genre.name}",
+        name=name,
+    )
 
 
 @bp.route("/book/<book_id>", methods=["GET"])
@@ -81,10 +257,6 @@ def book(book_id):
 
     if book is None:
         return redirect("/")
-
-    # query = sa.select(Comment).filter(Comment.book_id == book_id)
-    # comments = db.session.scalars(query)
-    # book_status = db.session.get(BookStatus, (current_user.id, book_id))
 
     return render_template(
         "book.html",
@@ -99,7 +271,6 @@ def book(book_id):
 
 @bp.post("/book/<book_id>")
 def post_comment(book_id):
-    print(request.form.get("ckeditor"))
     comment = markdown.markdown(request.form.get("commentbox"))
 
     if comment:
@@ -135,39 +306,19 @@ def user(username):
     return render_template("user.html", user=user)
 
 
-@bp.route("/settings")
-@login_required
-def settings():
-    return render_template("auth/settings.html")
-
-
 @bp.route("/update_pp", methods=["GET", "POST"])
 @login_required
 def update_pp():
     if request.method == "POST":
         if "file" not in request.files:
-            print("pp not in request... ", request.files)
             return redirect(request.referrer)
 
         file = request.files["file"]
 
         if file.filename == "":
-            print("filename is empty... ", request.files)
             return redirect(request.referrer)
 
         if file:
-            # os.path.join's backslash delimiter turns into
-            # %5C (special HTML character code for backslash)
-            # when treated as a path, e.g url_for('static', filename=filename)
-
-            # forward slashes do not have this issue on my machinem here using f-strings
-            # but I worry it might pose incompatibility with other file systems
-
-            # file_path = f"{current_app.config["UPLOAD_FOLDER"]}/pp/{file.filename}"
-
-            # replacing \ with / works, but I have no idea on different file systems
-            # probably still has the same incompatibility issues
-
             file_path = os.path.join(
                 current_app.config["UPLOAD_FOLDER"], "pp", file.filename
             ).replace("\\", "/")
@@ -208,7 +359,6 @@ def update_status():
         db.session.add(book_status)
 
     db.session.commit()
-    print("\nsuccessful:", book_status, "\n")
 
     return jsonify(message="Status successfully updated.")
 
@@ -220,9 +370,6 @@ def toggle_favorite():
     user_id = int(data["user_id"])
     book_id = data["book_id"]
     favorite = db.session.get(UserFavorite, (user_id, book_id))
-
-    user = db.session.get(User, user_id)
-    print(user.favorite_books)
 
     if favorite:
         db.session.delete(favorite)
@@ -238,20 +385,27 @@ def toggle_favorite():
 
 @bp.route("/api/search")
 def api_search():
-    type = request.args.get("type", "title")
-    query_string = request.args.get("query", "")
-    query = sa.select(Book).filter(getattr(Book, type).like(f"%{query_string}%"))
+    field = get_arg("field", "title")
+    if field == "all":
+        q = get_arg("query")
+        args = {k: q for k in SEARCHABLE_STRING_FIELDS + SEARCHABLE_RELATIONSHIP_FIELDS}
+    else:
+        args = request.args.to_dict()
+
+    query = or_like_query(args)
     results = db.session.scalars(query)
 
+    # TODO turn relationship fields into serializable (to_dict() perhaps?)
     response = {
         "result": [
             {
                 "id": book.id,
                 "title": book.title,
-                "author": book.author,
                 "description": book.description,
-                "publisher": book.publisher,
                 "ISBN": book.isbn,
+                # "authors": book.authors,
+                # "publisher": book.publisher,
+                # "genres": book.genres,
             }
             for book in results
         ]

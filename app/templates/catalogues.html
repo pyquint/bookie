@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Catalogues
+{% endblock title %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1>Catalogues</h1>
+        <ul>
+            {% for catalogue in catalogues %}
+                <li>
+                    <a href="{{ url_for('main.catalogue', catalogue=catalogue) }}">{{ catalogue | capitalize }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock content %}

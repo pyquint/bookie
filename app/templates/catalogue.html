@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    {{ catalogue }}
+{% endblock title %}
+
+{% block content %}
+    <style>
+        .catalogue-container ul {
+            display: flex;
+            flex-direction: column;
+            list-style: none;
+            max-height: 64vh;
+            flex-wrap: wrap;
+        }
+    </style>
+    <div class="container">
+        <h1 class="mt-4 mb-4">Listing: {{ catalogue }}</h1>
+        <div class="catalogue-container">
+            <ul>
+                {% for item in results %}
+                    <li>
+                        <a href="{{ url_for('main.' + catalogue, name=item.name) }}">{{ item.name }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% include "_pagination.html" %}
+{% endblock content %}

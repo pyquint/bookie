@@ -45,10 +45,11 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Montserrat"; }
+  font-family: "Lexend";
+  color: #28282B; }
 
 #search-type-dropdown option {
-  color: #1d1f06; }
+  color: #28282B; }
 
 #search-bar-container {
   position: relative; }
@@ -164,7 +165,7 @@ h6 {
     transform: scale(1.02); }
 
 .navbar .nav-links .nav-link {
-  color: #474d12; }
+  color: #28282B; }
   .navbar .nav-links .nav-link:hover {
     color: #fad542;
     font-weight: bold;
@@ -354,5 +355,12 @@ button.comment-action a {
 
 .fav-status {
   width: 1.5rem; }
+
+.book-description {
+  text-align: justify;
+  font-size: 1.2rem; }
+
+.book-info-table {
+  --bs-table-bg: transparent !important; }
 
 /*# sourceMappingURL=styles.scss.css.map */

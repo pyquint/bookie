@@ -8,8 +8,8 @@ $(function () {
     // lots of thanks to:
     // https://pqina.nl/blog/async-form-posts-with-a-couple-lines-of-vanilla-javascript/
 
-    updateStatusForm.on({
-        "submit": async function (e) {
+    updateStatusForm.on(
+        "submit", async function (e) {
             e.preventDefault();
             const form = e.target;
 
@@ -24,7 +24,7 @@ $(function () {
             bookActionsMsgDiv.empty().show();
             bookActionsMsgDiv.append("<p>Status successfully updated!</p>");
         }
-    });
+    );
 });
 
 async function toggleFavorite(bookID, userID) {

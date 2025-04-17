@@ -43,8 +43,21 @@
                     </a>
 
                     <ul class="nav col-12 col-lg-auto me-lg-auto justify-content-center mb-lg-0 align-items-center text-decoration-none nav-links">
-                        <a href="{{ url_for('main.search', all='true', sort='num_ratings', order='desc', page='1') }}"
-                           class="nav-link px-2">Book Catalogue</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               role="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">Catalogues</a>
+                            <ul class="dropdown-menu">
+                                {% for catalogue in CATALOGUES %}
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('main.catalogue', catalogue=catalogue) }}">{{ catalogue | capitalize }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                        <a href="{{ url_for('main.search', all='true') }}" class="nav-link px-2">All Books</a>
                         <a href="#" class="nav-link px-2">My Books</a>
                         <a href="{{ url_for('main.advanced_search') }}" class="nav-link px-2">Advanced Search</a>
                     </ul>
@@ -57,14 +70,12 @@
                           class="me-2">
                         <div class="col-12 col-lg-auto me-lg-3">
                             <div class="container-sm input-group align-middle p-2" id="search-container">
-                                <select class="form-select dropdown-toggle w-25" id="search-type-dropdown">
-                                    <option value="title">Title</option>
-                                    <option value="author">Author</option>
-                                    <option value="isbn">ISBN</option>
-                                    <option value="publisher">Publisher</option>
+                                <select name="field" class="form-select dropdown-toggle w-25" id="search-type-dropdown">
+                                    <option value="all">All</option>
+                                    {% for field in SEARCHABLE_STRING_FIELDS + SEARCHABLE_LIST_FIELDS %}
+                                        <option value="{{ field }}">{{ field | capitalize }}</option>
+                                    {% endfor %}
                                 </select>
-
-                                <!-- TODO autocomplete (trie or fetch first query like match) -->
                                 <div class="search-bar-container">
                                     <input type="text"
                                            class="form-control col-8 w-100"
@@ -89,10 +100,6 @@
                                     </svg>
                                 </button>
                             </div>
-
-                            <input type="hidden" name="sort" value="num_ratings" />
-                            <input type="hidden" name="order" value="desc" />
-                            <input type="hidden" name="page" value="1" />
                         </div>
                     </form>
 

@@ -1,5 +1,3 @@
-import json
-from ast import literal_eval
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -13,23 +11,8 @@ from sqlalchemy.orm import (
     mapped_column,
     relationship,
 )
-from sqlalchemy.types import TEXT, TypeDecorator
 
 from app import db, login_manager, ph
-
-
-class ListType(TypeDecorator):
-    impl = TEXT
-
-    def process_bind_param(self, value, dialect):
-        if value is None:
-            return "[]"
-        return json.dumps(value)
-
-    def process_result_value(self, value, dialect):
-        if value is None or value == "":
-            return []
-        return json.loads(value)
 
 
 @login_manager.user_loader
@@ -43,21 +26,16 @@ class Book(db.Model):
     id: Mapped[str] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(index=True)
     series: Mapped[Optional[str]] = mapped_column()
-    author: Mapped[str] = mapped_column(index=True)
     rating: Mapped[float] = mapped_column()
     description: Mapped[Optional[str]] = mapped_column()
     language: Mapped[str] = mapped_column()
     isbn: Mapped[str] = mapped_column()
-    genres: Mapped[str] = mapped_column(index=True)
-    characters: Mapped[str] = mapped_column()
     book_format: Mapped[Optional[str]] = mapped_column()
     edition: Mapped[Optional[str]] = mapped_column()
     pages: Mapped[Optional[int]] = mapped_column()
-    publisher: Mapped[Optional[str]] = mapped_column()
     publish_date: Mapped[Optional[str]] = mapped_column()
     first_publish_date: Mapped[Optional[str]] = mapped_column()
-    awards: Mapped[str] = mapped_column()
-    num_ratings: Mapped[float] = mapped_column()
+    num_ratings: Mapped[int] = mapped_column()
     ratings_by_stars: Mapped[str] = mapped_column()
     liked_percent: Mapped[float] = mapped_column()
     setting: Mapped[str] = mapped_column()
@@ -66,6 +44,22 @@ class Book(db.Model):
     bbe_votes: Mapped[int] = mapped_column()
     price: Mapped[Optional[float]] = mapped_column()
 
+    authors: Mapped[list["Author"]] = relationship(
+        back_populates="books", secondary="book_authors"
+    )
+    genres: Mapped[list["Genre"]] = relationship(
+        back_populates="books", secondary="book_genres"
+    )
+    characters: Mapped[list["Character"]] = relationship(
+        back_populates="books", secondary="book_characters"
+    )
+    awards: Mapped[list["Award"]] = relationship(
+        back_populates="books", secondary="book_awards"
+    )
+
+    publisher: Mapped["Publisher"] = relationship(
+        back_populates="books", secondary="book_publisher"
+    )
     comments: DynamicMapped[list["Comment"]] = relationship(back_populates="book")
     favorited_by: Mapped[list["User"]] = relationship(secondary="user_favorites")
     book_statuses: WriteOnlyMapped[list["BookStatus"]] = relationship(
@@ -81,37 +75,7 @@ class Book(db.Model):
             return None
 
     def __repr__(self):
-        return f"<Book {self.title} by {self.author}>"
-
-    def get_genres(self):
-        return literal_eval(self.genres) if self.genres else []
-
-    def add_genre(self, genre):
-        genres = self.get_genres()
-        if genre not in genres:
-            genres.append(genre)
-            self.genres = str(genres)
-
-    def remove_genre(self, genre):
-        genres = self.get_genres()
-        if genre in genres:
-            genres.remove(genre)
-            self.genres = str(genres)
-
-    def get_characters(self):
-        return literal_eval(self.characters) if self.characters else []
-
-    def add_character(self, character):
-        characters = self.get_characters()
-        if character not in characters:
-            characters.append(character)
-            self.characters = str(characters)
-
-    def remove_character(self, character):
-        characters = self.get_characters()
-        if character in characters:
-            characters.remove(character)
-            self.characters = str(characters)
+        return f"<Book {self.title} by {self.authors}>"
 
 
 class User(db.Model, UserMixin):
@@ -133,7 +97,7 @@ class User(db.Model, UserMixin):
         back_populates="user", lazy="dynamic"
     )
     favorite_books: Mapped[list["Book"]] = relationship(
-        secondary="user_favorites", lazy="dynamic"
+        secondary="user_favorites", overlaps="favorited_by", lazy="dynamic"
     )
 
     def get_id(self):
@@ -226,11 +190,140 @@ class UserFavorite(db.Model):
         db.ForeignKey(Book.id), primary_key=True, autoincrement=False
     )
 
-    # def __repr__(self):
-    #     return f"<UserFavorite {self.user.id}, {self.book.id}"
     book_id: Mapped[str] = mapped_column(
         db.ForeignKey(Book.id), primary_key=True, autoincrement=False
     )
 
-    # def __repr__(self):
-    #     return f"<UserFavorite {self.user.id}, {self.book.id}"
+    def __repr__(self):
+        return f"<UserFavorite {self.user.id} {self.book.id}"
+
+
+class Author(db.Model):
+    __tablename__ = "authors"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(index=True)
+
+    books: Mapped[list["Book"]] = relationship(
+        back_populates="authors", secondary="book_authors", lazy="dynamic"
+    )
+
+    def __repr__(self):
+        return f"<Author {self.id} {self.name}>"
+
+
+class Character(db.Model):
+    __tablename__ = "characters"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(index=True)
+
+    books: Mapped[list["Book"]] = relationship(
+        back_populates="characters", secondary="book_characters"
+    )
+
+    def __repr__(self):
+        return f"<Character {self.id} {self.name}>"
+
+
+class Genre(db.Model):
+    __tablename__ = "genres"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(index=True)
+
+    books: Mapped[list["Book"]] = relationship(
+        back_populates="genres", secondary="book_genres", lazy="dynamic"
+    )
+
+    def __repr__(self):
+        return f"<Genre {self.id} {self.name}>"
+
+
+class Award(db.Model):
+    __tablename__ = "awards"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(index=True)
+
+    books: Mapped[list["Book"]] = relationship(
+        back_populates="awards", secondary="book_awards"
+    )
+
+    def __repr__(self):
+        return f"<Award {self.id} {self.name}>"
+
+
+class Publisher(db.Model):
+    __tablename__ = "publishers"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(index=True)
+
+    books: Mapped[list["Book"]] = relationship(
+        back_populates="publisher", secondary="book_publisher", lazy="dynamic"
+    )
+
+    def __repr__(self):
+        return f"<Publisher {self.id} {self.name}>"
+
+
+class BookAuthor(db.Model):
+    __tablename__ = "book_authors"
+
+    book_id: Mapped[str] = mapped_column(
+        db.ForeignKey(Book.id), primary_key=True, autoincrement=False
+    )
+    author_id: Mapped[int] = mapped_column(
+        db.ForeignKey(Author.id), primary_key=True, autoincrement=False
+    )
+
+    def __repr__(self):
+        return f"<BookAuthor {self.book_id} {self.author_id}>"
+
+
+class BookGenre(db.Model):
+    __tablename__ = "book_genres"
+
+    book_id: Mapped[str] = mapped_column(
+        db.ForeignKey(Book.id), primary_key=True, autoincrement=False
+    )
+    genre_id: Mapped[int] = mapped_column(
+        db.ForeignKey(Genre.id), primary_key=True, autoincrement=False
+    )
+
+    def __repr__(self):
+        return f"<BookGenre {self.book_id} {self.genre_id}>"
+
+
+class BookCharacter(db.Model):
+    __tablename__ = "book_characters"
+
+    book_id: Mapped[str] = mapped_column(
+        db.ForeignKey(Book.id), primary_key=True, autoincrement=False
+    )
+    character_id: Mapped[int] = mapped_column(
+        db.ForeignKey(Character.id), primary_key=True, autoincrement=False
+    )
+
+
+class BookAward(db.Model):
+    __tablename__ = "book_awards"
+
+    book_id: Mapped[str] = mapped_column(
+        db.ForeignKey(Book.id), primary_key=True, autoincrement=False
+    )
+    award_id: Mapped[int] = mapped_column(
+        db.ForeignKey(Award.id), primary_key=True, autoincrement=False
+    )
+
+
+class BookPublisher(db.Model):
+    __tablename__ = "book_publisher"
+
+    book_id: Mapped[str] = mapped_column(
+        db.ForeignKey(Book.id), primary_key=True, autoincrement=False
+    )
+    publisher_id: Mapped[int] = mapped_column(
+        db.ForeignKey("publishers.id"), primary_key=True, autoincrement=False
+    )
