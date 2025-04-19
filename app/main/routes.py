@@ -178,8 +178,8 @@ def catalogues():
 
 @bp.route("/catalogue/<catalogue>", methods=["GET"])
 def catalogue(catalogue):
-    model = CATALOGUES[catalogue]["model"]
-    model_attr = CATALOGUES[catalogue]["attribute"]
+    model = getmodel(CATALOGUES[catalogue]["related_model"])
+    model_attr = CATALOGUES[catalogue]["related_field"]
 
     # `catalogue` may or may not have an s at the end, i.e. /catalogue/authors
     # but the url endpoint for an item of that catalogue should be singular, i.e. /author/<name>
