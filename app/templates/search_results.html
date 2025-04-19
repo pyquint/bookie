@@ -9,8 +9,8 @@
         <h1 class="mt-4">
             <strong>{{ header | safe }}</strong>
         </h1>
-        {% for parameter in search_parameters %}
-            <p class="fs-6 badge text-bg-success m-1">{{ parameter }}</p>
+        {% for key, value in search_parameters.items() %}
+            <p class="fs-6 badge text-bg-success m-1">{{ key }}~'{{ value }}'</p>
         {% endfor %}
         {% if results.items %}
             {% include "_book_results.html" %}

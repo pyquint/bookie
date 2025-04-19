@@ -10,9 +10,9 @@
             <div class="form-group">
                 <h2 class="text-center mb-4">Advanced Search</h2>
                 <form role="search" action="{{ url_for('main.search') }}" method="get" id="advanced-search">
-                    {% for field in SEARCHABLE_FIELDS %}
+                    {% for field, info in SEARCHABLE_FIELDS.items() %}
                         <div class="mb-3">
-                            <label for="{{ field }}" class="form-label">{{ field | capitalize }}</label>
+                            <label for="{{ field }}" class="form-label">{{ info["label"] | rstrip("s") }}</label>
                             <input type="text" class="form-control rounded" name="{{ field }}" id="{{ field }}" />
                         </div>
                     {% endfor %}

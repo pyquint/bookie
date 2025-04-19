@@ -28,8 +28,13 @@ $(function () {
     $("#order-btn").on(
         "click", function () {
             const sortForm = $("#sort-results");
-            sortForm.append("<input type='hidden' name='order' id='order' value='desc' />");
+
+            if (!$("input#order").length) {
+                sortForm.append("<input type='hidden' name='order' id='order' value='desc' />");
+            }
+
             const order = $("#order").val();
+
             if (order == "asc" || order == "") {
                 $("#order").val("desc");
             } else if (order == "desc") {

@@ -3,26 +3,22 @@ $(function () {
     $("#comment-section table").addClass("table table-bordered table-sm");
 });
 
-function quoteComment(comment_id, op) {
-    console.log("commenting...");
+function quote(comment_id) {
     $.ajax({
         type: "GET",
-        url: "/api/get_comment",
-        data: { comment_id: comment_id },
+        url: "/api/comments/" + comment_id,
         contentType: "application/json",
 
-        success: function (response) {
-            _quote(JSON.parse(response), op);
+        success: function (Comment) {
+            $("html, body").animate({ scrollTop: $(document).height() - $(window).height() });
+            const editor = window.CKEDITOR.instances.commentbox;
+            editor.insertHtml("<blockquote>" + Comment.comment + "</blockquote><br/>");
         },
 
         error: function (XMLHttpRequest, textStatus, errorThrown) {
-            console.log("XMLHttpRequest: " + XMLHttpRequest + "\nStatus: " + textStatus + "\nError: " + errorThrown);
+            console.error("XMLHttpRequest: " + XMLHttpRequest);
+            console.error("Status: " + textStatus);
+            console.error("Error: " + errorThrown);
         }
     });
-
-    function _quote(Comment, op) {
-        $("html, body").animate({ scrollTop: $(document).height() - $(window).height() });
-        const editor = window.CKEDITOR.instances.commentbox;
-        editor.insertHtml("<blockquote>" + Comment.comment + "</blockquote><br/>");
-    }
 }

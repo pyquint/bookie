@@ -1,7 +1,7 @@
-import json
 import os
 from urllib.parse import unquote
 
+import bleach
 import markdown
 import sqlalchemy as sa
 from flask import current_app, jsonify, redirect, render_template, request, url_for
@@ -10,16 +10,24 @@ from flask_login import (
     login_required,
 )
 from flask_sqlalchemy.pagination import Pagination
-from sqlalchemy import desc
+from sqlalchemy import and_, desc, inspect, or_
 
-from app import (
+from app import db
+from app.main import bp
+from app.models import (
+    CATALOGUES,
     SEARCHABLE_FIELDS,
     SEARCHABLE_RELATIONSHIP_FIELDS,
     SEARCHABLE_STRING_FIELDS,
-    db,
+    Author,
+    Book,
+    BookStatus,
+    Comment,
+    Genre,
+    Publisher,
+    User,
+    getmodel,
 )
-from app.main import bp
-from app.models import Author, Book, BookStatus, Comment, Genre, Publisher, User
 from bookie import Character, UserFavorite
 
 
@@ -65,7 +73,7 @@ def get_arg(key: str, default=None):
 def process_book_query(
     request, book_query, title="Search Results", header="", *args, **kwargs
 ):
-    sort_field = get_arg("sort", "num_ratings")
+    sort_field = get_arg("sort", "bbe_score")
     sort_order = get_arg("order", "desc")
     sort_by_attr = getattr(Book, sort_field)
     order_by_query_clause = sort_by_attr if sort_order == "asc" else desc(sort_by_attr)
@@ -85,14 +93,11 @@ def process_book_query(
 
     endpoint_url = url_for(request.endpoint, *args, **url_args, **kwargs)
 
-    search_parameters = [
-        f"{field}='{value}'"
+    search_parameters = {
+        field: value
         for field, value in url_args.items()
         if field in SEARCHABLE_FIELDS and value != ""
-    ]
-
-    print(f"\n{url_args=}\n")
-    print(f"\n{search_parameters=}\n")
+    }
 
     return render_template(
         "search_results.html",
@@ -108,32 +113,32 @@ def process_book_query(
     )
 
 
-def build_like_query(args: dict, conjunction=sa.and_):
+def build_like_query(args: dict[str, str], conjunction=and_):
     """Create a  LIKE query based on the provided arguments.
 
     The `conjunction` parameter can be either SQLAlchemy `and_` or `or_` function to combine the filters.
     """
     query = sa.select(Book)
-    filters = set()
+    filters = []
+    mapper = inspect(Book)
 
     for field in SEARCHABLE_STRING_FIELDS:
         if value := args.get(field):
-            filters.add(getattr(Book, field).like(f"%{value}%"))
+            attr = getattr(Book, field)
+            filters.append(attr.like(f"%{value}%"))
 
-    for field in SEARCHABLE_RELATIONSHIP_FIELDS:
+    for field, rel in SEARCHABLE_RELATIONSHIP_FIELDS.items():
         if value := args.get(field):
-            match field:
-                case "authors":
-                    filter = Book.authors.any(Author.name.like(f"%{value}%"))
-                case "genres":
-                    filter = Book.genres.any(Genre.name.like(f"%{value}%"))
-                case "characters":
-                    filter = Book.characters.any(Character.name.like(f"%{value}%"))
-                case "publisher":
-                    filter = Book.publisher.has(Publisher.name.like(f"%{value}%"))
-                case _:
-                    raise ValueError(f"Unknown field: {field}")
-            filters.add(filter)
+            related_model = getmodel(rel["related_model"])
+            related_field = getattr(related_model, rel["related_field"])
+            book_field = getattr(Book, field)
+
+            relationship_property = mapper.relationships.get(field)
+
+            if relationship_property.uselist:
+                filters.append(book_field.any(related_field.like(f"%{value}%")))
+            else:
+                filters.append(book_field.has(related_field.like(f"%{value}%")))
 
     return query.filter(conjunction(*filters))
 
@@ -147,16 +152,16 @@ def search():
     if field == "all":
         q = get_arg("query")
         args = {k: q for k in SEARCHABLE_FIELDS}
-        query = build_like_query(args, sa.or_)
+        query = build_like_query(args, or_)
         kwargs["header"] = f"Search results for all fields with '{q}':"
     else:
         args = request.args
-        query = build_like_query(args)
+        query = build_like_query(args, and_)
         kwargs["header"] = "Search results for:"
 
     if query_all:
-        kwargs["header"] = "Book Catalogue"
         query = sa.select(Book)
+        kwargs["header"] = "Book Catalogue"
 
     return process_book_query(request, query, **kwargs)
 
@@ -173,17 +178,15 @@ def catalogues():
 
 @bp.route("/catalogue/<catalogue>", methods=["GET"])
 def catalogue(catalogue):
-    match catalogue:
-        case "authors" | "author":
-            model = Author
-            catalogue = "author"
-        case "genres" | "genre":
-            model = Genre
-            catalogue = "genre"
-        case "publisher":
-            model = Publisher
+    model = CATALOGUES[catalogue]["model"]
+    model_attr = CATALOGUES[catalogue]["attribute"]
 
-    query = sa.select(model).order_by(model.name)
+    # `catalogue` may or may not have an s at the end, i.e. /catalogue/authors
+    # but the url endpoint for an item of that catalogue should be singular, i.e. /author/<name>
+    catalogue_endpoint = catalogue.rstrip("s")
+
+    query = sa.select(model).order_by(model_attr)
+
     results, prev_page_url, next_page_url = paginate(
         request, query, per_page=100, catalogue=catalogue
     )
@@ -191,6 +194,7 @@ def catalogue(catalogue):
     return render_template(
         "catalogue.html",
         catalogue=catalogue,
+        catalogue_endpoint=catalogue_endpoint,
         results=results,
         prev_page_url=prev_page_url,
         next_page_url=next_page_url,
@@ -220,6 +224,11 @@ def publisher(name):
     return catalogue_books_view(Publisher, name)
 
 
+@bp.route("/character/<path:name>", methods=["GET", "POST"])
+def character(name):
+    return catalogue_books_view(Character, name)
+
+
 @bp.route("/book/<book_id>", methods=["GET"])
 def book(book_id):
     book = db.session.get(Book, book_id)
@@ -240,7 +249,8 @@ def book(book_id):
 
 @bp.post("/book/<book_id>")
 def post_comment(book_id):
-    comment = markdown.markdown(request.form.get("commentbox"))
+    comment = request.form.get("commentbox")
+    comment = markdown.markdown(comment)
 
     if comment:
         # date_created = datetime.now().isoformat()
@@ -361,41 +371,15 @@ def api_search():
     else:
         args = request.args.to_dict()
 
-    query = build_like_query(args, sa.or_)
+    query = build_like_query(args, or_)
     results = db.session.scalars(query)
 
     # TODO turn relationship fields into serializable (to_dict() perhaps?)
-    response = {
-        "result": [
-            {
-                "id": book.id,
-                "title": book.title,
-                "description": book.description,
-                "ISBN": book.isbn,
-                # "authors": book.authors,
-                # "publisher": book.publisher,
-                # "genres": book.genres,
-            }
-            for book in results
-        ]
-    }
+    response = {"result": [book.to_dict() for book in results]}
 
     return jsonify(response)
 
 
-@bp.route("/api/get_comment")
-def get_comment():
-    comment_id = request.args.get("comment_id")
-
-    query = sa.select(Comment).filter_by(id=comment_id)
-    comment = db.session.scalar(query)
-
-    comment_dict = comment.__dict__
-    comment_dict.pop("_sa_instance_state")
-
-    return json.dumps(comment_dict, default=str)
-
-    comment_dict = comment.__dict__
-    comment_dict.pop("_sa_instance_state")
-
-    return json.dumps(comment_dict, default=str)
+@bp.route("/api/comments/<int:id>", methods=["GET"])
+def get_comment(id):
+    return db.get_or_404(Comment, id).to_dict()

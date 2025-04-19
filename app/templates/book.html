@@ -60,7 +60,7 @@
                             {% endif %}
 
                             <div class="mt-4 mb-4" id="status-container">
-                                <form role="status" action="{{ url_for('main.update_status') }}" method="post" id="update-status-form">
+                                <form role="status" action="{{ url_for('main.update_status') }}" method="post" id="update-status-form" autocomplete="off">
                                     <input type="hidden" name="book_id" value="{{ book.id }}" />
                                     {% set book_status = book.get_status_for(current_user.id) %}
                                     <label for="status-dropdown">Reading Status:</label>
@@ -175,9 +175,9 @@
                                         </tr>
                                         <tr>
                                             <td>
-                                                <strong>Ratings:</strong>
+                                                <strong>Rating:</strong>
                                             </td>
-                                            <td>{{ book.num_ratings }}</td>
+                                            <td>{{ book.rating }}</td>
                                         </tr>
                                         <tr>
                                             <td>
@@ -226,6 +226,25 @@
                                     </ul>
                                 </p>
                             </div>
+
+                            <div class="col p-2 m-2">
+                                <p>
+                                    <strong>
+                                        {% if book.characters | length > 1 %}
+                                            Characters:
+                                        {% else %}
+                                            Character:
+                                        {% endif %}
+                                    </strong>
+                                    <ul>
+                                        {% for character in book.characters %}
+                                            <li>
+                                                <a href="{{ url_for('main.character', name=character.name) }}">{{ character.name }}</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -248,7 +267,7 @@
                                 <div>
                                     {% if current_user.is_authenticated %}
                                         <button class="btn btn-link comment-action"
-                                                onclick="quoteComment({{ comment.id }}, '{{ comment.user.username }}')">
+                                                onclick="quote({{ comment.id }}, '{{ comment.user.username }}')">
                                             Quote
                                         </button>
                                     {% endif %}

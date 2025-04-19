@@ -25,11 +25,6 @@ ph = PasswordHasher()
 login_manager = LoginManager()
 ckeditor = CKEditor()
 
-CATALOGUES = ("authors", "genres", "publisher")
-SEARCHABLE_STRING_FIELDS = ("title", "isbn")
-SEARCHABLE_RELATIONSHIP_FIELDS = ("authors", "genres", "characters", "publisher")
-SEARCHABLE_FIELDS = SEARCHABLE_STRING_FIELDS + SEARCHABLE_RELATIONSHIP_FIELDS
-
 
 def create_app(config_class=Config):
     app = Flask(__name__, template_folder="templates")
@@ -46,15 +41,6 @@ def create_app(config_class=Config):
         },
     )
 
-    @app.context_processor
-    def inject_searchables():
-        return dict(
-            SEARCHABLE_STRING_FIELDS=SEARCHABLE_STRING_FIELDS,
-            SEARCHABLE_LIST_FIELDS=SEARCHABLE_RELATIONSHIP_FIELDS,
-            SEARCHABLE_FIELDS=SEARCHABLE_FIELDS,
-            CATALOGUES=CATALOGUES,
-        )
-
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
@@ -67,6 +53,28 @@ def create_app(config_class=Config):
     from app.main import bp as main_bp
 
     app.register_blueprint(main_bp)
+
+    from app.models import (
+        CATALOGUES,
+        SEARCHABLE_FIELDS,
+        SEARCHABLE_RELATIONSHIP_FIELDS,
+        SEARCHABLE_STRING_FIELDS,
+        SORTABLE_FIELDS,
+    )
+
+    @app.context_processor
+    def inject_searchables():
+        return dict(
+            SEARCHABLE_STRING_FIELDS=SEARCHABLE_STRING_FIELDS,
+            SEARCHABLE_LIST_FIELDS=SEARCHABLE_RELATIONSHIP_FIELDS,
+            SEARCHABLE_FIELDS=SEARCHABLE_FIELDS,
+            CATALOGUES=CATALOGUES,
+            SORTABLE_FIELDS=SORTABLE_FIELDS,
+        )
+
+    @app.template_filter("rstrip")
+    def rstrip_filter(s, suffix):
+        return s.rstrip(suffix)
 
     return app
 

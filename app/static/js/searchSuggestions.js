@@ -8,6 +8,9 @@ $(function () {
             suggestionsBox.width(inputWidth);
 
             const field = $("#search-type-dropdown option:selected").val();
+            if (field == "all") {
+                return;
+            }
             const query = $(this).val().toLowerCase();
 
             console.log("field: " + field);
@@ -22,7 +25,7 @@ $(function () {
             // TODO allow different and multiple parameters
             // TODO reuse search results route logic?
             // ? above points done, I think?
-            const queryParameters = jQuery.param({ field, query });
+            const queryParameters = jQuery.param({ field, [field]: query });
 
             const response =
                 await fetch("/api/search?" + queryParameters, {

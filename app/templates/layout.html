@@ -72,8 +72,8 @@
                             <div class="container-sm input-group align-middle p-2" id="search-container">
                                 <select name="field" class="form-select dropdown-toggle w-25" id="search-type-dropdown">
                                     <option value="all">All</option>
-                                    {% for field in SEARCHABLE_FIELDS %}
-                                        <option value="{{ field }}">{{ field | capitalize }}</option>
+                                    {% for field, info in SEARCHABLE_FIELDS.items() %}
+                                        <option value="{{ field }}">{{ info.label }}</option>
                                     {% endfor %}
                                 </select>
                                 <div class="search-bar-container">

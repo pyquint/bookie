@@ -7,16 +7,26 @@ import sys
 from pathlib import Path
 from sqlite3 import IntegrityError
 
+import sqlalchemy as sa
+
 root_dir = Path(__file__).resolve().parents[1]
 sys.path.append(str(root_dir))
 
 
-from app.models import Author, Award, Character, Genre, Publisher, ReadingStatus
+from app.models import (
+    Author,
+    Award,
+    Character,
+    Genre,
+    Publisher,
+    ReadingStatus,
+    Setting,
+)
 from bookie import Book, app, db
 
 
 def get_or_create(model, **kwargs):
-    instance = db.session.query(model).filter_by(**kwargs).first()
+    instance = db.session.scalar(sa.select(model).filter_by(**kwargs))
     if instance:
         return instance
     instance = model(**kwargs)
@@ -24,31 +34,33 @@ def get_or_create(model, **kwargs):
     return instance
 
 
-def parse_list_field(value: str):
+def parse_list_field(value: str, duplicates=False):
     """Parses the field stored in the database as a list of values.
     `value` is either formatted as `["a", "b", "c"]` or `"a, b, c"`"""
     if not value:
         return []
-    value = value.strip()
     if value.startswith("[") and value.endswith("]"):
-        # `set` prevents IntegrityError
-        return set(ast.literal_eval(value))
-    return (val for val in value.split(","))
+        if duplicates:
+            return (x.strip() for x in ast.literal_eval(value))
+        seen = set()
+        return (
+            x.strip() for x in ast.literal_eval(value) if not (x in seen or seen.add(x))
+        )
+    return (x.strip() for x in value.split(","))
 
 
-def parse_numeric(value: str, numtype=float):
+def num_or_none(value: str, numtype):
     try:
-        value = numtype(value)
-        return value
-    except ValueError:
-        return 0.0
+        return numtype(value)
+    except (ValueError, TypeError):
+        return None
 
 
 def import_books(csv_path, batch_size=1000):
     with open(csv_path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
-        batch = set()
+        batch_count = 0
 
         for row in reader:
             print(f"Importing book {row["title"]}...")
@@ -59,45 +71,60 @@ def import_books(csv_path, batch_size=1000):
                 print("\tAlready exists. Skipping...")
                 continue
 
-            authors = [
+            authors = (
                 get_or_create(Author, name=name)
                 for name in parse_list_field(row["author"])
-            ]
-            genres = [
+            )
+            genres = (
                 get_or_create(Genre, name=name)
-                for name in parse_list_field(row.get("genres", ""))
-            ]
-            characters = [
+                for name in parse_list_field(row["genres"])
+            )
+            characters = (
                 get_or_create(Character, name=name)
-                for name in parse_list_field(row.get("characters", ""))
-            ]
-            awards = [
+                for name in parse_list_field(row["characters"])
+            )
+            awards = (
                 get_or_create(Award, name=name)
-                for name in parse_list_field(row.get("awards", ""))
+                for name in parse_list_field(row["awards"])
+            )
+            settings = (
+                get_or_create(Setting, name=name)
+                for name in parse_list_field(row["setting"])
+            )
+            publisher = get_or_create(Publisher, name=row["publisher"])
+
+            ratings_by_stars = [
+                int(n) for n in ast.literal_eval(row["ratings_by_stars"])
             ]
-            publisher = get_or_create(Publisher, name=row.get("publisher"))
+
+            # to ensure ratings_by_stars has 5 elements (fill with 0)
+            if (length := len(ratings_by_stars)) < 5:
+                ratings_by_stars = ratings_by_stars + [0] * (5 - length)
 
             book = Book(
                 id=row["id"],
                 title=row["title"],
-                series=row.get("series"),
-                rating=parse_numeric(row.get("rating", 0), float),
-                description=row.get("description"),
-                language=row.get("language"),
-                isbn=row.get("isbn"),
-                book_format=row.get("book_format"),
-                edition=row.get("edition"),
-                pages=row.get("pages"),
-                publish_date=row.get("publish_date"),
-                first_publish_date=row.get("first_publish_date"),
-                num_ratings=parse_numeric(row.get("num_ratings", 0), int),
-                ratings_by_stars=row.get("ratings_by_stars"),
-                liked_percent=parse_numeric(row.get("liked_percent", 0), float),
-                setting=row.get("setting"),
-                cover_img=row.get("cover_img"),
-                bbe_score=row.get("bbe_score"),
-                bbe_votes=row.get("bbe_votes"),
-                price=parse_numeric(row.get("price", 0), float),
+                series=row["series"],
+                description=row["description"],
+                language=row["language"],
+                isbn=row["isbn"],
+                book_format=row["book_format"],
+                edition=row["edition"],
+                publish_date=row["publish_date"],
+                first_publish_date=row["first_publish_date"],
+                five_star_ratings=ratings_by_stars[0],
+                four_star_ratings=ratings_by_stars[1],
+                three_star_ratings=ratings_by_stars[2],
+                two_star_ratings=ratings_by_stars[3],
+                one_star_ratings=ratings_by_stars[4],
+                cover_img=row["cover_img"],
+                rating=num_or_none(row["rating"], float),
+                pages=num_or_none(row["pages"], int),
+                num_ratings=num_or_none(row["num_ratings"], int),
+                liked_percent=num_or_none(row["liked_percent"], float),
+                bbe_score=num_or_none(row["bbe_score"], int),
+                bbe_votes=num_or_none(row["bbe_votes"], int),
+                price=num_or_none(row["price"], float),
             )
 
             db.session.add(book)
@@ -106,16 +133,17 @@ def import_books(csv_path, batch_size=1000):
             book.genres.extend(genres)
             book.characters.extend(characters)
             book.awards.extend(awards)
+            book.settings.extend(settings)
 
             book.publisher = publisher
 
-            batch.add(book)
+            batch_count += 1
 
-            if len(batch) >= batch_size:
+            if batch_count >= batch_size:
                 db.session.commit()
-                batch = set()
+                batch_count = 0
 
-        if batch:
+        if batch_count > 0:
             db.session.commit()
 
 
@@ -146,7 +174,6 @@ if __name__ == "__main__":
     print("Deleting .db file and .\\migrations folder...\n")
     if os.path.exists(database_path):
         os.remove(database_path)
-        print("No .db file found\n")
     shutil.rmtree("migrations")
     print("Done!\n")
 

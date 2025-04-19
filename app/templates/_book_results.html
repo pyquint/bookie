@@ -5,9 +5,11 @@
         <div class="row g-2">
             <div class="col">
                 <select name="sort" class="form-select" id="sortby">
-                    <option value="num_ratings" {% if args.sort=='num_ratings' %}selected{% endif %}>Ratings</option>
-                    <option value="title" {% if args.sort=='title' %}selected{% endif %}>Title</option>
-                    <option value="pages" {% if args.sort=='pages' %}selected{% endif %}>Pages</option>
+                    {% for class, field_data in SORTABLE_FIELDS.items() %}
+                        {% for field, info in field_data.items() %}
+                            <option value="{{ field }}" {% if args.sort==field %}selected{% endif %}>{{ info.label }}</option>
+                        {% endfor %}
+                    {% endfor %}
                 </select>
             </div>
             <div class="col">
@@ -84,13 +86,18 @@
                                         <strong>Publisher:</strong> <a href="{{ url_for('main.publisher', name=book.publisher.name | urlencode) }}">{{ book.publisher.name }}</a>
                                     </p>
                                     <p class="mb-1">
-                                        <strong>Pages:</strong> {{ book.pages }}
-                                    </p>
-                                    <p class="mb-1">
-                                        <strong>Num Ratings:</strong> {{ "{:,.2f}".format(book.num_ratings) }}
+                                        <strong>Score:</strong> {{ "{:,}".format(book.bbe_score) }}
                                     </p>
                                     <p class="mb-1">
                                         <strong>Rating:</strong> {{ book.rating }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Pages:</strong>
+                                        {% if book.pages %}
+                                            {{ "{:,}".format(book.pages) }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
                                     </p>
                                 </div>
                             </div>
@@ -101,6 +108,5 @@
         {% endfor %}
     </div>
 </div>
-
 
 {% include "_pagination.html" %}

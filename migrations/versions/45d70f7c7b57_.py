@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 029d5745cfd2
+Revision ID: 45d70f7c7b57
 Revises: 
-Create Date: 2025-04-17 18:49:24.992638
+Create Date: 2025-04-19 18:04:00.836047
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '029d5745cfd2'
+revision = '45d70f7c7b57'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -38,26 +38,32 @@ def upgrade():
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('title', sa.String(), nullable=False),
     sa.Column('series', sa.String(), nullable=True),
-    sa.Column('rating', sa.Float(), nullable=False),
     sa.Column('description', sa.String(), nullable=True),
     sa.Column('language', sa.String(), nullable=False),
     sa.Column('isbn', sa.String(), nullable=False),
     sa.Column('book_format', sa.String(), nullable=True),
     sa.Column('edition', sa.String(), nullable=True),
-    sa.Column('pages', sa.Integer(), nullable=True),
     sa.Column('publish_date', sa.String(), nullable=True),
     sa.Column('first_publish_date', sa.String(), nullable=True),
-    sa.Column('num_ratings', sa.Integer(), nullable=False),
-    sa.Column('ratings_by_stars', sa.String(), nullable=False),
-    sa.Column('liked_percent', sa.Float(), nullable=False),
-    sa.Column('setting', sa.String(), nullable=False),
+    sa.Column('five_star_ratings', sa.Integer(), nullable=False),
+    sa.Column('four_star_ratings', sa.Integer(), nullable=False),
+    sa.Column('three_star_ratings', sa.Integer(), nullable=False),
+    sa.Column('two_star_ratings', sa.Integer(), nullable=False),
+    sa.Column('one_star_ratings', sa.Integer(), nullable=False),
     sa.Column('cover_img', sa.String(), nullable=False),
+    sa.Column('rating', sa.Float(), nullable=False),
+    sa.Column('pages', sa.Integer(), nullable=True),
+    sa.Column('num_ratings', sa.Integer(), nullable=False),
+    sa.Column('liked_percent', sa.Float(), nullable=True),
     sa.Column('bbe_score', sa.Integer(), nullable=False),
     sa.Column('bbe_votes', sa.Integer(), nullable=False),
     sa.Column('price', sa.Float(), nullable=True),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_books'))
     )
     with op.batch_alter_table('books', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_books_isbn'), ['isbn'], unique=False)
+        batch_op.create_index(batch_op.f('ix_books_num_ratings'), ['num_ratings'], unique=False)
+        batch_op.create_index(batch_op.f('ix_books_rating'), ['rating'], unique=False)
         batch_op.create_index(batch_op.f('ix_books_title'), ['title'], unique=False)
 
     op.create_table('characters',
@@ -90,6 +96,14 @@ def upgrade():
     sa.PrimaryKeyConstraint('id', name=op.f('pk_reading_statuses')),
     sa.UniqueConstraint('name', name=op.f('uq_reading_statuses_name'))
     )
+    op.create_table('settings',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(), nullable=False),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_settings'))
+    )
+    with op.batch_alter_table('settings', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_settings_name'), ['name'], unique=False)
+
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=64), nullable=False),
@@ -111,6 +125,10 @@ def upgrade():
     sa.ForeignKeyConstraint(['book_id'], ['books.id'], name=op.f('fk_book_authors_book_id_books')),
     sa.PrimaryKeyConstraint('book_id', 'author_id', name=op.f('pk_book_authors'))
     )
+    with op.batch_alter_table('book_authors', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_book_authors_author_id'), ['author_id'], unique=False)
+        batch_op.create_index(batch_op.f('ix_book_authors_book_id'), ['book_id'], unique=False)
+
     op.create_table('book_awards',
     sa.Column('book_id', sa.String(), autoincrement=False, nullable=False),
     sa.Column('award_id', sa.Integer(), autoincrement=False, nullable=False),
@@ -118,6 +136,10 @@ def upgrade():
     sa.ForeignKeyConstraint(['book_id'], ['books.id'], name=op.f('fk_book_awards_book_id_books')),
     sa.PrimaryKeyConstraint('book_id', 'award_id', name=op.f('pk_book_awards'))
     )
+    with op.batch_alter_table('book_awards', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_book_awards_award_id'), ['award_id'], unique=False)
+        batch_op.create_index(batch_op.f('ix_book_awards_book_id'), ['book_id'], unique=False)
+
     op.create_table('book_characters',
     sa.Column('book_id', sa.String(), autoincrement=False, nullable=False),
     sa.Column('character_id', sa.Integer(), autoincrement=False, nullable=False),
@@ -125,6 +147,10 @@ def upgrade():
     sa.ForeignKeyConstraint(['character_id'], ['characters.id'], name=op.f('fk_book_characters_character_id_characters')),
     sa.PrimaryKeyConstraint('book_id', 'character_id', name=op.f('pk_book_characters'))
     )
+    with op.batch_alter_table('book_characters', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_book_characters_book_id'), ['book_id'], unique=False)
+        batch_op.create_index(batch_op.f('ix_book_characters_character_id'), ['character_id'], unique=False)
+
     op.create_table('book_genres',
     sa.Column('book_id', sa.String(), autoincrement=False, nullable=False),
     sa.Column('genre_id', sa.Integer(), autoincrement=False, nullable=False),
@@ -132,6 +158,10 @@ def upgrade():
     sa.ForeignKeyConstraint(['genre_id'], ['genres.id'], name=op.f('fk_book_genres_genre_id_genres')),
     sa.PrimaryKeyConstraint('book_id', 'genre_id', name=op.f('pk_book_genres'))
     )
+    with op.batch_alter_table('book_genres', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_book_genres_book_id'), ['book_id'], unique=False)
+        batch_op.create_index(batch_op.f('ix_book_genres_genre_id'), ['genre_id'], unique=False)
+
     op.create_table('book_publisher',
     sa.Column('book_id', sa.String(), autoincrement=False, nullable=False),
     sa.Column('publisher_id', sa.Integer(), autoincrement=False, nullable=False),
@@ -139,6 +169,21 @@ def upgrade():
     sa.ForeignKeyConstraint(['publisher_id'], ['publishers.id'], name=op.f('fk_book_publisher_publisher_id_publishers')),
     sa.PrimaryKeyConstraint('book_id', 'publisher_id', name=op.f('pk_book_publisher'))
     )
+    with op.batch_alter_table('book_publisher', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_book_publisher_book_id'), ['book_id'], unique=False)
+        batch_op.create_index(batch_op.f('ix_book_publisher_publisher_id'), ['publisher_id'], unique=False)
+
+    op.create_table('book_settings',
+    sa.Column('book_id', sa.String(), autoincrement=False, nullable=False),
+    sa.Column('setting_id', sa.Integer(), autoincrement=False, nullable=False),
+    sa.ForeignKeyConstraint(['book_id'], ['books.id'], name=op.f('fk_book_settings_book_id_books')),
+    sa.ForeignKeyConstraint(['setting_id'], ['settings.id'], name=op.f('fk_book_settings_setting_id_settings')),
+    sa.PrimaryKeyConstraint('book_id', 'setting_id', name=op.f('pk_book_settings'))
+    )
+    with op.batch_alter_table('book_settings', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_book_settings_book_id'), ['book_id'], unique=False)
+        batch_op.create_index(batch_op.f('ix_book_settings_setting_id'), ['setting_id'], unique=False)
+
     op.create_table('book_statuses',
     sa.Column('user_id', sa.Integer(), autoincrement=False, nullable=False),
     sa.Column('book_id', sa.String(), autoincrement=False, nullable=False),
@@ -170,11 +215,19 @@ def upgrade():
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_user_favorites_user_id_users')),
     sa.PrimaryKeyConstraint('user_id', 'book_id', name=op.f('pk_user_favorites'))
     )
+    with op.batch_alter_table('user_favorites', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_user_favorites_book_id'), ['book_id'], unique=False)
+        batch_op.create_index(batch_op.f('ix_user_favorites_user_id'), ['user_id'], unique=False)
+
     # ### end Alembic commands ###
 
 
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
+    with op.batch_alter_table('user_favorites', schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f('ix_user_favorites_user_id'))
+        batch_op.drop_index(batch_op.f('ix_user_favorites_book_id'))
+
     op.drop_table('user_favorites')
     with op.batch_alter_table('comments', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_comments_user_id'))
@@ -182,10 +235,35 @@ def downgrade():
 
     op.drop_table('comments')
     op.drop_table('book_statuses')
+    with op.batch_alter_table('book_settings', schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f('ix_book_settings_setting_id'))
+        batch_op.drop_index(batch_op.f('ix_book_settings_book_id'))
+
+    op.drop_table('book_settings')
+    with op.batch_alter_table('book_publisher', schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f('ix_book_publisher_publisher_id'))
+        batch_op.drop_index(batch_op.f('ix_book_publisher_book_id'))
+
     op.drop_table('book_publisher')
+    with op.batch_alter_table('book_genres', schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f('ix_book_genres_genre_id'))
+        batch_op.drop_index(batch_op.f('ix_book_genres_book_id'))
+
     op.drop_table('book_genres')
+    with op.batch_alter_table('book_characters', schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f('ix_book_characters_character_id'))
+        batch_op.drop_index(batch_op.f('ix_book_characters_book_id'))
+
     op.drop_table('book_characters')
+    with op.batch_alter_table('book_awards', schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f('ix_book_awards_book_id'))
+        batch_op.drop_index(batch_op.f('ix_book_awards_award_id'))
+
     op.drop_table('book_awards')
+    with op.batch_alter_table('book_authors', schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f('ix_book_authors_book_id'))
+        batch_op.drop_index(batch_op.f('ix_book_authors_author_id'))
+
     op.drop_table('book_authors')
     with op.batch_alter_table('users', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_users_username'))
@@ -193,6 +271,10 @@ def downgrade():
         batch_op.drop_index(batch_op.f('ix_users_date_created'))
 
     op.drop_table('users')
+    with op.batch_alter_table('settings', schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f('ix_settings_name'))
+
+    op.drop_table('settings')
     op.drop_table('reading_statuses')
     with op.batch_alter_table('publishers', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_publishers_name'))
@@ -208,6 +290,9 @@ def downgrade():
     op.drop_table('characters')
     with op.batch_alter_table('books', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_books_title'))
+        batch_op.drop_index(batch_op.f('ix_books_rating'))
+        batch_op.drop_index(batch_op.f('ix_books_num_ratings'))
+        batch_op.drop_index(batch_op.f('ix_books_isbn'))
 
     op.drop_table('books')
     with op.batch_alter_table('awards', schema=None) as batch_op:

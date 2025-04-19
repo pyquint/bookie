@@ -15,17 +15,17 @@ Developed in Python and Flask, using SQLite as the database.
     - [x] publishers
     - [x] characters
     - [x] awards
-    - [ ] setting?
+    - [x] settings
     - [ ] language
   - Treat as some list of values:
-    - [x] authors (as relationship)
-    - [x] genres (as relationship)
-    - [x] characters (as relationship)
-    - [x] awards (as relationship)
-    - [ ] setting?
-    - [ ] ratings_by_stars = [1_star_count, ..., 5_star_count]
+    - [x] authors - as relationship
+    - [x] genres = as relationship
+    - [x] characters - as relationship
+    - [x] awards - as relationship
+    - [x] settings - as relationship
+    - [x] ratings_by_stars - new columns [one...five]_star_ratings
   - Fix inconsistency in type or formatting:
-    - [ ] pages
+    - [x] pages - now None if invalid
     - [ ] publish date
     - [ ] first publish date
   - [x] Fix duplicate entries (note: relying on sqlite to reject duplicate book id)
@@ -33,7 +33,9 @@ Developed in Python and Flask, using SQLite as the database.
 - [x] Add flexible sorting of search results, e.g. by rating, publication date, alphabetical, etc.
   - [x] Sort by ascending or descending order.
 - [x] Implement search keyword autocomplete.
-- [ ] Improve web design. Least priority.
+- [ ] API
+- [ ] Proper documentation.
+- [ ] Improve web design.
 
 # Installation
 The process below are specifically for Windows only, but with a few tweaks to the commands they also apply to Unix/macOS or other operating system.
@@ -81,14 +83,9 @@ bookie> .venv\Scripts\activate
 
 5. Run the setup script.
 
-```
-(.venv) bookie> cd data
-(.venv) bookie\data> setup.bat
-```
-or
 
-```
-(.venv) bookie> data\setup.bat
+```powershell
+(.venv) bookie> python .\data\setup.py
 ```
 
 6. Run the application.
