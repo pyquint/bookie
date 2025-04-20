@@ -1,11 +1,12 @@
 import ast
 import csv
 import os
+import re
 import shutil
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
-from sqlite3 import IntegrityError
 
 import sqlalchemy as sa
 
@@ -56,6 +57,65 @@ def num_or_none(value: str, numtype):
         return None
 
 
+def parse_date_or_none(value: str) -> tuple[None, None] | tuple[datetime, str]:
+    """
+    Parses a date string and returns a tuple of the parsed date and the format used.
+    If the date string is empty or cannot be parsed, return None for both values.
+    """
+    if not value:
+        return None, None
+
+    formats = [
+        "%m/%d/%y",  # 01/30/23
+        "%d/%m/%y",  # 30/01/23
+        "%m/%d/%Y",  # 01/30/2023
+        "%Y-%m-%d",  # 2023-01-30
+        "%Y/%m/%d",  # 2023/01/30
+        "%Y",  # 2023
+        "%B %Y",  # January 2023
+    ]
+
+    formats_with_month_name = [
+        "%B %d, %Y",  # January 30, 2023
+        "%B %d, %y",  # January 30, 23
+        "%B %d %Y",  # January 30 2023
+        "%B %d %y",  # January 30 23
+    ]
+
+    # some date string are formatted as "Published: January 30th, 2023" or something similar
+    value = value.split(":")[0]
+
+    # remove ordinal suffixes (st, nd, rd, th)
+    value = re.sub(r"(\d+)(st|nd|rd|th)", r"\1", value).strip()
+
+    for format in formats + formats_with_month_name:
+        try:
+            date = datetime.strptime(value, format)
+            # print(f"Parsed date {value} {format} = {fmtd}.")
+            return date, format
+        except ValueError:
+            continue
+
+    # print(f"could not parse date: {value}")
+    return None, None
+
+
+def reorder_date_format(format: str | None) -> str | None:
+    if format is None:
+        return None
+
+    format = format.replace("%B", "%m").replace("%y", "%Y")
+
+    if "%Y" in format and "%m" in format and "%d" in format:
+        return "%Y-%m-%d"
+    elif "%Y" in format and "%m" in format:
+        return "%Y-%m"
+    elif "%Y" in format and "%d" in format:
+        return "%Y-%d"
+    else:
+        return format
+
+
 def import_books(csv_path, batch_size=1000):
     with open(csv_path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -101,6 +161,9 @@ def import_books(csv_path, batch_size=1000):
             if (length := len(ratings_by_stars)) < 5:
                 ratings_by_stars = ratings_by_stars + [0] * (5 - length)
 
+            publish_date, pd_fmt = parse_date_or_none(row["publish_date"])
+            first_publish_date, fpd_fmt = parse_date_or_none(row["first_publish_date"])
+
             book = Book(
                 id=row["id"],
                 title=row["title"],
@@ -110,8 +173,10 @@ def import_books(csv_path, batch_size=1000):
                 isbn=row["isbn"],
                 book_format=row["book_format"],
                 edition=row["edition"],
-                publish_date=row["publish_date"],
-                first_publish_date=row["first_publish_date"],
+                publish_date=publish_date,
+                publish_date_format=reorder_date_format(pd_fmt),
+                first_publish_date=first_publish_date,
+                first_publish_date_format=reorder_date_format(fpd_fmt),
                 five_star_ratings=ratings_by_stars[0],
                 four_star_ratings=ratings_by_stars[1],
                 three_star_ratings=ratings_by_stars[2],
@@ -147,8 +212,7 @@ def import_books(csv_path, batch_size=1000):
             db.session.commit()
 
 
-if __name__ == "__main__":
-
+def main():
     def run_command(command, shell=True, check=True):
         print(f"> {command}")
         result = subprocess.run(command, shell=shell, check=check, capture_output=True)
@@ -169,9 +233,9 @@ if __name__ == "__main__":
 
     print(f"\nScript directory: {script_dir}")
     print(f"Root directory: {root_dir}")
-    print(f"Dataset path: {dataset_path}\n\n")
+    print(f"Dataset path: {dataset_path}\n")
 
-    print("Deleting .db file and .\\migrations folder...\n")
+    print("Deleting .db file and .\\migrations folder...")
     if os.path.exists(database_path):
         os.remove(database_path)
     shutil.rmtree("migrations")
@@ -206,3 +270,23 @@ if __name__ == "__main__":
         print("Done!\n")
 
     print("Database setup completed successfully.")
+
+
+if __name__ == "__main__":
+    main()
+
+    # with app.app_context():
+    #     for value in db.session.query(Book.publish_date_format).distinct():
+    #         print(f"Publish Date FMT: {value}")
+    #     for value in db.session.query(Book.first_publish_date_format).distinct():
+    #         print(f"First Publish Date FMT: {value}")
+
+    # To save you the bother, here are the distinct values
+    # for the publish date and first publish date formats:
+    # - '%m/%d/%y'
+    # - '%B %d %Y'
+    # - '%Y'
+    # - '%B %Y'
+    # - None
+    # - '%B %d %y' (publish date only)
+    #  has the same formats

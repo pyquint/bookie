@@ -59,9 +59,6 @@
                                 <div class="text-muted">
                                     <p class="mb-1">
                                         <strong>
-                                            {# appending the s only adds a space like what? #}
-                                            {# Authors
-                                        {% if book.authors | length > 1 %}s{% else %}{% endif %} #}
                                             {% if book.authors | length > 1 %}
                                                 Authors:
                                             {% else %}
@@ -77,16 +74,26 @@
                                         </ul>
                                     </p>
                                     <p class="mb-1">
-                                        <strong>Published:</strong> {{ book.publish_date }}
+                                        <strong>Score:</strong> {{ "{:,}".format(book.bbe_score) }}
                                     </p>
                                     <p class="mb-1">
                                         <strong>ISBN:</strong> {{ book.isbn }}
                                     </p>
                                     <p class="mb-1">
-                                        <strong>Publisher:</strong> <a href="{{ url_for('main.publisher', name=book.publisher.name | urlencode) }}">{{ book.publisher.name }}</a>
+                                        <strong>Publisher:</strong>
+                                        {% if book.publisher.name %}
+                                            <a href="{{ url_for('main.publisher', name=book.publisher.name | urlencode) }}">{{ book.publisher.name }}</a>
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
                                     </p>
                                     <p class="mb-1">
-                                        <strong>Score:</strong> {{ "{:,}".format(book.bbe_score) }}
+                                        <strong>Date of Publication:</strong>
+                                        {% if book.publish_date %}
+                                            {{ book.publish_date.strftime(book.publish_date_format) }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
                                     </p>
                                     <p class="mb-1">
                                         <strong>Rating:</strong> {{ book.rating }}

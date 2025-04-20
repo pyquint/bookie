@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 45d70f7c7b57
+Revision ID: 492515504c04
 Revises: 
-Create Date: 2025-04-19 18:04:00.836047
+Create Date: 2025-04-20 12:59:18.208040
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '45d70f7c7b57'
+revision = '492515504c04'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -37,26 +37,28 @@ def upgrade():
     op.create_table('books',
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('title', sa.String(), nullable=False),
-    sa.Column('series', sa.String(), nullable=True),
-    sa.Column('description', sa.String(), nullable=True),
-    sa.Column('language', sa.String(), nullable=False),
     sa.Column('isbn', sa.String(), nullable=False),
-    sa.Column('book_format', sa.String(), nullable=True),
-    sa.Column('edition', sa.String(), nullable=True),
-    sa.Column('publish_date', sa.String(), nullable=True),
-    sa.Column('first_publish_date', sa.String(), nullable=True),
+    sa.Column('rating', sa.Float(), nullable=False),
+    sa.Column('num_ratings', sa.Integer(), nullable=False),
+    sa.Column('language', sa.String(), nullable=False),
+    sa.Column('description', sa.String(), nullable=False),
+    sa.Column('book_format', sa.String(), nullable=False),
+    sa.Column('series', sa.String(), nullable=False),
+    sa.Column('edition', sa.String(), nullable=False),
     sa.Column('five_star_ratings', sa.Integer(), nullable=False),
     sa.Column('four_star_ratings', sa.Integer(), nullable=False),
     sa.Column('three_star_ratings', sa.Integer(), nullable=False),
     sa.Column('two_star_ratings', sa.Integer(), nullable=False),
     sa.Column('one_star_ratings', sa.Integer(), nullable=False),
     sa.Column('cover_img', sa.String(), nullable=False),
-    sa.Column('rating', sa.Float(), nullable=False),
-    sa.Column('pages', sa.Integer(), nullable=True),
-    sa.Column('num_ratings', sa.Integer(), nullable=False),
-    sa.Column('liked_percent', sa.Float(), nullable=True),
     sa.Column('bbe_score', sa.Integer(), nullable=False),
     sa.Column('bbe_votes', sa.Integer(), nullable=False),
+    sa.Column('publish_date', sa.DateTime(), nullable=True),
+    sa.Column('first_publish_date', sa.DateTime(), nullable=True),
+    sa.Column('publish_date_format', sa.String(), nullable=True),
+    sa.Column('first_publish_date_format', sa.String(), nullable=True),
+    sa.Column('pages', sa.Integer(), nullable=True),
+    sa.Column('liked_percent', sa.Float(), nullable=True),
     sa.Column('price', sa.Float(), nullable=True),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_books'))
     )
@@ -196,7 +198,7 @@ def upgrade():
     )
     op.create_table('comments',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('comment', sa.String(), nullable=False),
+    sa.Column('body', sa.String(), nullable=False),
     sa.Column('date_created', sa.DateTime(), nullable=False),
     sa.Column('book_id', sa.String(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),

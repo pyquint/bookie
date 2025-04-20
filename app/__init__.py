@@ -46,26 +46,30 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     ckeditor.init_app(app)
 
-    from app.auth import bp as auth_bp
+    from app.main import main as main_bp
+
+    app.register_blueprint(main_bp)
+
+    from app.auth import auth as auth_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
 
-    from app.main import bp as main_bp
+    from app.api import api as api_bp
 
-    app.register_blueprint(main_bp)
+    app.register_blueprint(api_bp, url_prefix="/api/v1")
 
     from app.models import (
         CATALOGUES,
         SEARCHABLE_FIELDS,
         SEARCHABLE_RELATIONSHIP_FIELDS,
-        SEARCHABLE_STRING_FIELDS,
+        SEARCHABLE_SCALAR_FIELDS,
         SORTABLE_FIELDS,
     )
 
     @app.context_processor
     def inject_searchables():
         return dict(
-            SEARCHABLE_STRING_FIELDS=SEARCHABLE_STRING_FIELDS,
+            SEARCHABLE_SCALAR_FIELDS=SEARCHABLE_SCALAR_FIELDS,
             SEARCHABLE_LIST_FIELDS=SEARCHABLE_RELATIONSHIP_FIELDS,
             SEARCHABLE_FIELDS=SEARCHABLE_FIELDS,
             CATALOGUES=CATALOGUES,

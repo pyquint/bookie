@@ -12,7 +12,7 @@ function quote(comment_id) {
         success: function (Comment) {
             $("html, body").animate({ scrollTop: $(document).height() - $(window).height() });
             const editor = window.CKEDITOR.instances.commentbox;
-            editor.insertHtml("<blockquote>" + Comment.comment + "</blockquote><br/>");
+            editor.insertHtml("<blockquote>" + Comment.body + "</blockquote><br/>");
         },
 
         error: function (XMLHttpRequest, textStatus, errorThrown) {

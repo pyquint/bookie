@@ -18,21 +18,21 @@ Developed in Python and Flask, using SQLite as the database.
     - [x] settings
     - [ ] language
   - Treat as some list of values:
-    - [x] authors - as relationship
-    - [x] genres = as relationship
-    - [x] characters - as relationship
-    - [x] awards - as relationship
-    - [x] settings - as relationship
-    - [x] ratings_by_stars - new columns [one...five]_star_ratings
+    - [x] authors
+    - [x] genres
+    - [x] characters
+    - [x] awards
+    - [x] settings
+    - [x] ratings_by_stars
   - Fix inconsistency in type or formatting:
     - [x] pages - now None if invalid
-    - [ ] publish date
-    - [ ] first publish date
-  - [x] Fix duplicate entries (note: relying on sqlite to reject duplicate book id)
+    - [x] publish date
+    - [x] first publish date
+  - [x] Fix duplicate entries
 - [x] Add advanced search filtering (multiple search criterias, filter by genre or rating, etc.).
 - [x] Add flexible sorting of search results, e.g. by rating, publication date, alphabetical, etc.
   - [x] Sort by ascending or descending order.
-- [x] Implement search keyword autocomplete.
+- [ ] Implement search keyword autocomplete.
 - [ ] API
 - [ ] Proper documentation.
 - [ ] Improve web design.

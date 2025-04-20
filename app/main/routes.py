@@ -1,7 +1,6 @@
 import os
 from urllib.parse import unquote
 
-import bleach
 import markdown
 import sqlalchemy as sa
 from flask import current_app, jsonify, redirect, render_template, request, url_for
@@ -13,12 +12,12 @@ from flask_sqlalchemy.pagination import Pagination
 from sqlalchemy import and_, desc, inspect, or_
 
 from app import db
-from app.main import bp
+from app.main import main
 from app.models import (
     CATALOGUES,
     SEARCHABLE_FIELDS,
     SEARCHABLE_RELATIONSHIP_FIELDS,
-    SEARCHABLE_STRING_FIELDS,
+    SEARCHABLE_SCALAR_FIELDS,
     Author,
     Book,
     BookStatus,
@@ -31,9 +30,9 @@ from app.models import (
 from bookie import Character, UserFavorite
 
 
-@bp.route("/")
-@bp.route("/index")
-@bp.route("/home")
+@main.route("/")
+@main.route("/index")
+@main.route("/home")
 def index():
     return render_template("index.html")
 
@@ -122,15 +121,15 @@ def build_like_query(args: dict[str, str], conjunction=and_):
     filters = []
     mapper = inspect(Book)
 
-    for field in SEARCHABLE_STRING_FIELDS:
+    for field in SEARCHABLE_SCALAR_FIELDS:
         if value := args.get(field):
             attr = getattr(Book, field)
             filters.append(attr.like(f"%{value}%"))
 
-    for field, rel in SEARCHABLE_RELATIONSHIP_FIELDS.items():
+    for field, info in SEARCHABLE_RELATIONSHIP_FIELDS.items():
         if value := args.get(field):
-            related_model = getmodel(rel["related_model"])
-            related_field = getattr(related_model, rel["related_field"])
+            related_model = getmodel(info["related_model"])
+            related_field = getattr(related_model, info["related_field"])
             book_field = getattr(Book, field)
 
             relationship_property = mapper.relationships.get(field)
@@ -143,7 +142,7 @@ def build_like_query(args: dict[str, str], conjunction=and_):
     return query.filter(conjunction(*filters))
 
 
-@bp.route("/search", methods=["GET"])
+@main.route("/search", methods=["GET"])
 def search():
     query_all = request.args.get("all", "false") == "true"
     field = get_arg("field", "title")
@@ -166,17 +165,17 @@ def search():
     return process_book_query(request, query, **kwargs)
 
 
-@bp.route("/advanced_search")
+@main.route("/advanced_search")
 def advanced_search():
     return render_template("advanced_search.html")
 
 
-@bp.route("/catalogues", methods=["GET"])
+@main.route("/catalogues", methods=["GET"])
 def catalogues():
     return render_template("catalogues.html", catalogues=SEARCHABLE_RELATIONSHIP_FIELDS)
 
 
-@bp.route("/catalogue/<catalogue>", methods=["GET"])
+@main.route("/catalogue/<catalogue>", methods=["GET"])
 def catalogue(catalogue):
     model = getmodel(CATALOGUES[catalogue]["related_model"])
     model_attr = CATALOGUES[catalogue]["related_field"]
@@ -209,27 +208,27 @@ def catalogue_books_view(model, name):
     return process_book_query(request, model_object.books, header=header, name=name)
 
 
-@bp.route("/author/<path:name>", methods=["GET", "POST"])
+@main.route("/author/<path:name>", methods=["GET", "POST"])
 def author(name):
     return catalogue_books_view(Author, name)
 
 
-@bp.route("/genre/<path:name>", methods=["GET", "POST"])
+@main.route("/genre/<path:name>", methods=["GET", "POST"])
 def genre(name):
     return catalogue_books_view(Genre, name)
 
 
-@bp.route("/publisher/<path:name>", methods=["GET", "POST"])
+@main.route("/publisher/<path:name>", methods=["GET", "POST"])
 def publisher(name):
     return catalogue_books_view(Publisher, name)
 
 
-@bp.route("/character/<path:name>", methods=["GET", "POST"])
+@main.route("/character/<path:name>", methods=["GET", "POST"])
 def character(name):
     return catalogue_books_view(Character, name)
 
 
-@bp.route("/book/<book_id>", methods=["GET"])
+@main.route("/book/<book_id>", methods=["GET"])
 def book(book_id):
     book = db.session.get(Book, book_id)
 
@@ -247,28 +246,26 @@ def book(book_id):
     )
 
 
-@bp.post("/book/<book_id>")
+@main.post("/book/<book_id>")
 def post_comment(book_id):
-    comment = request.form.get("commentbox")
-    comment = markdown.markdown(comment)
+    body = request.form.get("commentbox")
+    body = markdown.markdown(body)
 
-    if comment:
-        # date_created = datetime.now().isoformat()
-        comment = Comment(
+    if body:
+        body = Comment(
             book_id=book_id,
             user_id=current_user.id,
-            comment=comment,
-            # date_created=date_created,
+            body=body,
         )
 
-        db.session.add(comment)
+        db.session.add(body)
         db.session.commit()
 
-    # prevents resubmitting of comment when reloadign the page immedately after posting
+    # prevents resubmitting of comment when reloading the page immedately after posting
     return redirect(url_for("main.book", book_id=book_id))
 
 
-@bp.route("/book/<book_id>/delete_comment?<comment_id>")
+@main.route("/book/<book_id>/delete_comment?<comment_id>")
 def delete_comment(book_id, comment_id):
     comment = db.session.get(Comment, comment_id)
     db.session.delete(comment)
@@ -277,7 +274,7 @@ def delete_comment(book_id, comment_id):
     return redirect(url_for("main.book", book_id=book_id))
 
 
-@bp.route("/user/<username>")
+@main.route("/user/<username>")
 def user(username):
     query = sa.select(User).where(User.username == username)
     user = db.session.scalar(query)
@@ -285,7 +282,7 @@ def user(username):
     return render_template("user.html", user=user)
 
 
-@bp.route("/update_pp", methods=["GET", "POST"])
+@main.route("/update_pp", methods=["GET", "POST"])
 @login_required
 def update_pp():
     if request.method == "POST":
@@ -310,7 +307,7 @@ def update_pp():
         return redirect(url_for("main.user", username=current_user.username))
 
 
-@bp.post("/update_status")
+@main.post("/update_status")
 @login_required
 def update_status():
     status_id = request.form.get("status_id", type=int)
@@ -342,7 +339,7 @@ def update_status():
     return jsonify(message="Status successfully updated.")
 
 
-@bp.post("/toggle_favorite")
+@main.post("/toggle_favorite")
 @login_required
 def toggle_favorite():
     data = request.get_json()
@@ -360,26 +357,3 @@ def toggle_favorite():
 
     db.session.commit()
     return response
-
-
-@bp.route("/api/search")
-def api_search():
-    field = get_arg("field", "title")
-    if field == "all":
-        q = get_arg("query")
-        args = {k: q for k in SEARCHABLE_FIELDS}
-    else:
-        args = request.args.to_dict()
-
-    query = build_like_query(args, or_)
-    results = db.session.scalars(query)
-
-    # TODO turn relationship fields into serializable (to_dict() perhaps?)
-    response = {"result": [book.to_dict() for book in results]}
-
-    return jsonify(response)
-
-
-@bp.route("/api/comments/<int:id>", methods=["GET"])
-def get_comment(id):
-    return db.get_or_404(Comment, id).to_dict()

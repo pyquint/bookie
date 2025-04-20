@@ -3,6 +3,7 @@ from typing import Optional, Type
 
 import sqlalchemy as sa
 from argon2.exceptions import VerifyMismatchError
+from flask import url_for
 from flask_login import UserMixin
 from flask_sqlalchemy.model import Model
 from sqlalchemy.orm import (
@@ -21,32 +22,70 @@ def load_user(id):
     return db.session.get(User, id)
 
 
-class Book(db.Model):
+# https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xxiii-application-programming-interfaces-apis
+
+
+class PaginatedAPIMixin(object):
+    @staticmethod
+    def to_collection_dict(query, page, per_page, endpoint, **kwargs):
+        resources = db.paginate(query, page=page, per_page=per_page, error_out=False)
+        data = {
+            "items": [item.to_dict() for item in resources.items],
+            "_meta": {
+                "page": page,
+                "per_page": per_page,
+                "total_pages": resources.pages,
+                "total_items": resources.total,
+            },
+            "_links": {
+                "self": url_for(endpoint, page=page, per_page=per_page, **kwargs),
+                "next": (
+                    url_for(endpoint, page=page + 1, per_page=per_page, **kwargs)
+                    if resources.has_next
+                    else None
+                ),
+                "prev": (
+                    url_for(endpoint, page=page - 1, per_page=per_page, **kwargs)
+                    if resources.has_prev
+                    else None
+                ),
+            },
+        }
+        return data
+
+
+class Book(db.Model, PaginatedAPIMixin):
     __tablename__ = "books"
 
     id: Mapped[str] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(index=True)
-    series: Mapped[Optional[str]] = mapped_column()
-    description: Mapped[Optional[str]] = mapped_column()
-    language: Mapped[str] = mapped_column()
     isbn: Mapped[str] = mapped_column(index=True)
-    book_format: Mapped[Optional[str]] = mapped_column()
-    edition: Mapped[Optional[str]] = mapped_column()
-    publish_date: Mapped[Optional[str]] = mapped_column()
-    first_publish_date: Mapped[Optional[str]] = mapped_column()
+    description: Mapped[str] = mapped_column()
+    book_format: Mapped[str] = mapped_column()
+    language: Mapped[str] = mapped_column()
+    series: Mapped[str] = mapped_column()
+    edition: Mapped[str] = mapped_column()
+    cover_img: Mapped[str] = mapped_column()
+
+    rating: Mapped[float] = mapped_column(index=True)
+    num_ratings: Mapped[int] = mapped_column(index=True)
+    bbe_score: Mapped[int] = mapped_column()
+    bbe_votes: Mapped[int] = mapped_column()
+
     five_star_ratings: Mapped[int] = mapped_column()
     four_star_ratings: Mapped[int] = mapped_column()
     three_star_ratings: Mapped[int] = mapped_column()
     two_star_ratings: Mapped[int] = mapped_column()
     one_star_ratings: Mapped[int] = mapped_column()
-    cover_img: Mapped[str] = mapped_column()
-    rating: Mapped[float] = mapped_column(index=True)
-    num_ratings: Mapped[int] = mapped_column(index=True)
-    bbe_score: Mapped[int] = mapped_column()
-    bbe_votes: Mapped[int] = mapped_column()
+
     pages: Mapped[Optional[int]] = mapped_column()
-    liked_percent: Mapped[Optional[float]] = mapped_column()
     price: Mapped[Optional[float]] = mapped_column()
+    liked_percent: Mapped[Optional[float]] = mapped_column()
+
+    publish_date: Mapped[Optional[datetime]] = mapped_column()
+    publish_date_format: Mapped[Optional[str]] = mapped_column()
+    first_publish_date: Mapped[Optional[datetime]] = mapped_column()
+    first_publish_date_format: Mapped[Optional[str]] = mapped_column()
 
     authors: Mapped[list["Author"]] = relationship(
         back_populates="books", secondary="book_authors"
@@ -73,14 +112,6 @@ class Book(db.Model):
         back_populates="book", lazy="dynamic"
     )
 
-    def get_status_for(self, user_id):
-        if user_id:
-            print(f"{user_id=}, {self.id=}")
-            status = db.session.get(BookStatus, (user_id, self.id))
-            return status
-        else:
-            return None
-
     def to_dict(self):
         return {
             "id": self.id,
@@ -94,13 +125,17 @@ class Book(db.Model):
             "edition": self.edition,
             "pages": self.pages,
             "publish_date": self.publish_date,
+            "publish_date_format": self.publish_date_format,
             "first_publish_date": self.first_publish_date,
+            "first_publish_date_format": self.first_publish_date_format,
             "num_ratings": self.num_ratings,
-            "five_star_ratings": self.five_star_ratings,
-            "four_star_ratings": self.four_star_ratings,
-            "three_star_ratings": self.three_star_ratings,
-            "two_star_ratings": self.two_star_ratings,
-            "one_star_ratings": self.one_star_ratings,
+            "star_ratings": [
+                self.one_star_ratings,
+                self.two_star_ratings,
+                self.three_star_ratings,
+                self.four_star_ratings,
+                self.five_star_ratings,
+            ],
             "liked_percent": self.liked_percent,
             "cover_img": self.cover_img,
             "bbe_score": self.bbe_score,
@@ -111,13 +146,14 @@ class Book(db.Model):
             "awards": [award.name for award in self.awards],
             "settings": [setting.name for setting in self.settings],
             "publisher": self.publisher.name if self.publisher else "",
+            "price": self.price,
         }
 
     def __repr__(self):
         return f"<Book {self.title} by {self.authors}>"
 
 
-class User(db.Model, UserMixin):
+class User(db.Model, UserMixin, PaginatedAPIMixin):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -155,9 +191,19 @@ class User(db.Model, UserMixin):
     def change_pp(self, filepath):
         self.pp = filepath
 
-    def get_book_status(self, book_id):
+    def get_status_for(self, book_id):
         status = db.session.get(BookStatus, (self.id, book_id))
         return status
+
+    def comments_count(self):
+        query = sa.select(sa.func.count()).select_from(
+            self.comments.select().subquery()
+        )
+        return db.session.scalar(query)
+
+    def favorite_books_count(self):
+        query = sa.select(sa.func.count()).select_from(self.favorite_books.subquery())
+        return db.session.scalar(query)
 
     def to_dict(self):
         return {
@@ -165,23 +211,22 @@ class User(db.Model, UserMixin):
             "username": self.username,
             "email": self.email,
             "date_created": self.date_created.replace(tzinfo=timezone.utc).isoformat(),
-            "pp": self.pp,
             "comment_count": self.comments_count(),
+            "comments_url": url_for("api.get_comment", id=self.id),
+            "favorite_count": self.favorite_books_count(),
+            "_links": {"self": url_for("api.get_user", id=self.id)},
+            # "pp": self.pp, # useless since the profile picture is not a url but rather a filepath
         }
-
-    def comments_count(self):
-        query = sa.select(sa.func.count()).select_from(self.comments.select().subquery)
-        return db.session.scalar(query)
 
     def __repr__(self):
         return f"<User {self.id} {self.username}>"
 
 
-class Comment(db.Model):
+class Comment(db.Model, PaginatedAPIMixin):
     __tablename__ = "comments"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    comment: Mapped[str] = mapped_column()
+    body: Mapped[str] = mapped_column()
     date_created: Mapped[datetime] = mapped_column(
         index=True, default=lambda: datetime.now(timezone.utc)
     )
@@ -198,14 +243,27 @@ class Comment(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
+            "comment": self.body,
             "user_id": self.user_id,
             "book_id": self.book_id,
-            "comment": self.comment,
             "date_created": self.date_created.replace(tzinfo=timezone.utc).isoformat(),
+            "_links": {
+                "self": url_for("api.get_comment", id=self.id),
+                "user": url_for("api.get_user", id=self.user_id),
+                "book": url_for("api.get_book", id=self.book_id),
+            },
         }
 
+    @staticmethod
+    def from_dict(data):
+        return Comment(
+            body=data["body"],
+            user_id=data["user_id"],
+            book_id=data["book_id"],
+        )
+
     def __repr__(self):
-        return f'<Comment {self.id} "{self.comment}">'
+        return f'<Comment {self.id} "{self.body}">'
 
 
 class ReadingStatus(db.Model):
@@ -418,22 +476,22 @@ class BookSetting(db.Model):
 # ! These mappings are used to dynamically create elements in the webpage
 # ! as well as apply verification and filtering when querying data.
 
-SEARCHABLE_STRING_FIELDS: dict[str, dict[str, str]] = {
+SEARCHABLE_SCALAR_FIELDS: dict[str, dict[str, str]] = {
     "title": {"label": "Title"},
     "isbn": {"label": "ISBN"},
     "series": {"label": "Series"},
 }
-"""Mapping for various searchable string attributes of the Book model.
+"""Mapping for various searchable string attributes of the Book model.\\
 Keys are the field names on the Book moel.
 
-Example:
-```
-{
+```python
+SEARCHABLE_SCALAR_FIELDS: dict[str, dict[str, str]] = {
     "title": {"label": "Title"},
     "isbn": {"label": "ISBN"},
+    "series": {"label": "Series"},
 }
 
-for name, info in SEARCHABLE_STRING_FIELDS:
+for name, info in SEARCHABLE_SCALAR_FIELDS.items():
     field = getattr(Book, "field")
     label = info["label"]
     # do something with the field name and label
@@ -465,14 +523,46 @@ SEARCHABLE_RELATIONSHIP_FIELDS: dict[str, dict[str, str]] = {
     },
 }
 """
-Just like `SEACHABLE_STRING_FIELDS`, this dictionary provides a mapping for various
-searchable attributes that are added as relationship with other tables.
-As you can see, 4 related fields are called `name`, but it is structured like this so that
-relationship fields with searchable attribute not called `name` can be added easily.
+Mapping of various searchable book attributes added as a relationship with other tables.\\
+Might restructure into some list of dictionaries to support multuple related field per relationship,\\
+i.e. `author.name` and `author.biography`.
+
+```python
+SEARCHABLE_RELATIONSHIP_FIELDS = {
+    "authors": {
+        "label": "Authors",
+        "related_model": "Author",
+        "related_field": "name",
+    },
+    "genres": {
+        "label": "Genres",
+        "related_model": "Genre",
+        "related_field": "name",
+    },
+    "publisher": {
+        "label": "Publisher",
+        "related_model": "Publisher",
+        "related_field": "name",
+    },
+    "characters": {
+        "label": "Characters",
+        "related_model": "Character",
+        "related_field": "name",
+    },
+}
+
+# Example usage:
+for name, rel_info in SEARCHABLE_RELATIONSHIP_FIELDS.items():
+    field = getattr(Book, name)
+    related_model = getmodel(rel_info["related_model"]]
+    related_field = getattr(related_model, rel_info["related_field"])
+    label = rel_info["label"]
+    # do something with the book field, related model and field, and label
+```
 """
 
 
-SEARCHABLE_FIELDS = SEARCHABLE_STRING_FIELDS | SEARCHABLE_RELATIONSHIP_FIELDS
+SEARCHABLE_FIELDS = SEARCHABLE_SCALAR_FIELDS | SEARCHABLE_RELATIONSHIP_FIELDS
 CATALOGUES = SEARCHABLE_RELATIONSHIP_FIELDS.copy()
 
 
@@ -481,13 +571,36 @@ SORTABLE_FIELDS: dict[str, dict[str, dict[str]]] = {
         "bbe_score": {"label": "Score"},
         "title": {"label": "Title"},
         "price": {"label": "Price"},
+        "publish_date": {"label": "Publish Date"},
         "num_ratings": {"label": "Rating Count"},
         "pages": {"label": "Page Count"},
         # "publish_date": {"label": "Publish Date"},
     }
 }
-"""Mapping of fields per model that can be used to sort query results.
-Only scalar fields are included becuase It makes no sense to sort iterable fields"""
+"""
+Mapping of fields per model that can be used to sort query results.\\
+Only scalar fields are sortable becuase it makes no sense to sort iterable fields.
+
+```python
+SORTABLE_FIELDS: = {
+    "Book": {
+        "bbe_score": {"label": "Score"},
+        "title": {"label": "Title"},
+        "price": {"label": "Price"},
+        "num_ratings": {"label": "Rating Count"},
+        "pages": {"label": "Page Count"},
+    }
+}
+
+# Example usage:
+for model_name, fields in SORTABLE_FIELDS.items():
+    model = getmodel(model_name)
+    for field_name, info in fields.items():
+        field = getattr(model, field_name)
+        label = info["label"]
+        # do something with the field name and label
+```
+"""
 
 
 def getmodel(model_name: str) -> Type[Model]:

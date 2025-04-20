@@ -10,7 +10,7 @@
             display: none;
         }
 
-        .book-desc {
+        .book-description {
             font-size: large;
         }
 
@@ -60,9 +60,17 @@
                             {% endif %}
 
                             <div class="mt-4 mb-4" id="status-container">
-                                <form role="status" action="{{ url_for('main.update_status') }}" method="post" id="update-status-form" autocomplete="off">
+                                <form role="status"
+                                      action="{{ url_for('main.update_status') }}"
+                                      method="post"
+                                      id="update-status-form"
+                                      autocomplete="off">
                                     <input type="hidden" name="book_id" value="{{ book.id }}" />
-                                    {% set book_status = book.get_status_for(current_user.id) %}
+                                    {% if current_user.is_authenticated %}
+                                        {% set book_status = current_user.get_status_for(book.id) %}
+                                    {% else %}
+                                        {% set book_status = "1" %}
+                                    {% endif %}
                                     <label for="status-dropdown">Reading Status:</label>
                                     <select name="status_id" class="form-select dropdown-toggle" id="status-dropdown" autocomplete="off">
                                         <option value="1" {% if book_status.reading_status_id == '1' %}selected{% endif %}>
@@ -147,13 +155,25 @@
                                             <td>
                                                 <strong>Date of Publication:</strong>
                                             </td>
-                                            <td>{{ book.publish_date }}</td>
+                                            <td>
+                                                {% if book.publish_date %}
+                                                    {{ book.publish_date.strftime(book.publish_date_format) }}
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <strong>First Publish Date:</strong>
                                             </td>
-                                            <td>{{ book.first_publish_date }}</td>
+                                            <td>
+                                                {% if book.first_publish_date %}
+                                                    {{ book.first_publish_date.strftime(book.first_publish_date_format) }}
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td>
@@ -165,13 +185,25 @@
                                             <td>
                                                 <strong>Series:</strong>
                                             </td>
-                                            <td>{{ book.series }}</td>
+                                            <td>
+                                                {% if book.series %}
+                                                    {{ book.series }}
+                                                {% else %}
+
+                                                {% endif %}
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <strong>Edition:</strong>
                                             </td>
-                                            <td>{{ book.edition }}</td>
+                                            <td>
+                                                {% if book.edition %}
+                                                    {{ book.edition }}
+                                                {% else %}
+
+                                                {% endif %}
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td>
@@ -284,7 +316,7 @@
                                        title="{{ comment.date_created_fmt('%a %b %d %Y %I:%M:%S %p %Z %z') }}">
                                         {{ comment.date_created_fmt("%B %d, %Y") }}
                                     </p>
-                                    <div class="card-text">{{ comment.comment | safe }}</div>
+                                    <div class="card-text">{{ comment.body | safe }}</div>
                                 </div>
                             </div>
                         </div>

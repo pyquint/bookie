@@ -6,73 +6,11 @@ The database, when fully populated, amounts to some 200 MB. To reduce the projec
 Simply run `setup.bat` in the `bookie\data` directory.
 
 # SQLAlchemy Models
-Currently, the SQLAlchemy models reside in the `models.py` file.
+Currently, the SQLAlchemy models reside in `app\models.py`.
 
-## Books
-```python
-class Book(db.Model):
-    __tablename__ = "books"
+## [Books](Books.md)
 
-    book_id = db.Column(db.Text, primary_key=True)
-    isbn = db.Column(db.Text, nullable=False)
-    title = db.Column(db.Text, nullable=False)
-    series = db.Column(db.Text, nullable=True)
-    author = db.Column(db.Text, nullable=True)
-    rating = db.Column(db.Float, nullable=True)
-    description = db.Column(db.Text, nullable=True)
-    language = db.Column(db.Text, nullable=True)
-    genres = db.Column(db.Text, nullable=True)
-    characters = db.Column(db.Text, nullable=True)
-    book_format = db.Column(db.Text, nullable=True)
-    edition = db.Column(db.Text, nullable=True)
-    pages = db.Column(db.Integer, nullable=True)
-    publisher = db.Column(db.Text, nullable=True)
-    publish_date = db.Column(db.Text, nullable=True)    first_publish_date = db.Column(db.Text, nullable=True)
-    awards = db.Column(db.Text, nullable=True)
-    num_ratings = db.Column(db.Float, nullable=True)
-    ratings_by_stars = db.Column(db.Text, nullable=True)
-    liked_percent = db.Column(db.Float, nullable=True)
-    setting = db.Column(db.Text, nullable=True)
-    cover_img = db.Column(db.Text, nullable=True)
-    bbe_score = db.Column(db.Float, nullable=True)
-    bbe_votes = db.Column(db.Integer, nullable=True)
-    price = db.Column(db.Float, nullable=True)
-
-    def __repr__(self):
-        return f"<Book {self.title} by {self.author}>"
-```
-
-## Users
-```python
-class User(db.Model, UserMixin):
-    __tablename__ = "users"
-
-    uid = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.Text, nullable=False, unique=True)
-    email = db.Column(db.Text, nullable=False)
-    date_created = db.Column(db.Text, nullable=False)
-    password_hash = db.Column(db.Text, nullable=False)
-
-    def get_id(self):
-        return self.uid
-
-    def set_password(self, password):
-        self.password_hash = ph.hash(password)
-
-    def check_password(self, password):
-        try:
-            ph.verify(self.password_hash, password)
-            return True
-        except VerifyMismatchError:
-            return False
-
-    def __repr__(self):
-        return f"<User {self.username}; Password Hash: {self.password_hash}; Date Created {self.date_created}>"
-```
-
-As stated in [Users](Users.md),  `date_created` is a String formatted in ISO 8901.
-
-Checking password hashes is done with`ph`, which is a `PasswordHasher` object from the `argon2` package, declared and imported from `app.py`.
+## [Users](Users.md)
 
 ## Comments
 ```python
@@ -101,7 +39,8 @@ After setting up the database and structuring the models, it is recommended to u
 
 **Any changes to the models needs to be followed by commands 2 and 3.**
 
-To sync changes, run command 3.
+To sync changes after pulling a commit with no db changes, run command 3.
+Otherwise, run `setup.py` to automatically re-initialize the database.
 
 
 If errors ensue, the forceful approach would be to delete the `migrate` folder and running the commands again.

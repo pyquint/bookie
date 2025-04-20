@@ -10,12 +10,12 @@ from flask_login import (
 )
 
 from app import db
-from app.auth import bp
+from app.auth import auth
 from app.auth.forms import ForgotPasswordForm, LoginForm, SignupForm
 from app.models import User
 
 
-@bp.route("/signup", methods=["GET", "POST"])
+@auth.route("/signup", methods=["GET", "POST"])
 def signup():
     form = SignupForm()
 
@@ -45,7 +45,7 @@ def signup():
     return render_template("auth/signup.html", form=form)
 
 
-@bp.route("/login", methods=["GET", "POST"])
+@auth.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("main.index"))
@@ -75,7 +75,7 @@ def login():
     return render_template("auth/login.html", form=form)
 
 
-@bp.route("/forgot_password", methods=["GET", "POST"])
+@auth.route("/forgot_password", methods=["GET", "POST"])
 def forgot_password():
     form = ForgotPasswordForm()
 
@@ -95,7 +95,7 @@ def forgot_password():
     return render_template("auth/forgot_password.html", form=form)
 
 
-@bp.route("/logout")
+@auth.route("/logout")
 @login_required
 def logout():
     logout_user()
@@ -103,7 +103,7 @@ def logout():
     return redirect(url_for("main.index"))
 
 
-@bp.route("/settings")
+@auth.route("/settings")
 @login_required
 def settings():
     return render_template("auth/settings.html")
